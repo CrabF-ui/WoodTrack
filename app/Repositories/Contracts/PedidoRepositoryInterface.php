@@ -1,3 +1,4 @@
+//PedidoRepositoryInterface.php
 <?php
 
 namespace App\Repositories\Contracts;
@@ -7,6 +8,11 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface PedidoRepositoryInterface
 {
+    //** Agregacion del SOFT DELETE */
+    /** DELETE /api/pedidos/{id} */
+    public function delete(int $id): bool;
+
+
     /** GET /api/pedidos (filtro opcional por estado) */
     public function getAll(?string $estado = null): Collection;
 

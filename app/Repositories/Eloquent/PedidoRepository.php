@@ -1,3 +1,4 @@
+//PedidoRepository.php
 <?php
 
 namespace App\Repositories\Eloquent;
@@ -10,6 +11,12 @@ use Illuminate\Support\Facades\DB;
 class PedidoRepository implements PedidoRepositoryInterface
 {
     private const RELACIONES = ['cliente', 'detalles'];
+
+    public function delete(int $id): bool
+    {
+    $pedido = Pedido::findOrFail($id);
+    return $pedido->delete(); // soft delete, gracias al trait SoftDeletes
+    }
 
     public function getAll(?string $estado = null): Collection
     {

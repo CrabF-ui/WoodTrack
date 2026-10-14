@@ -1,4 +1,3 @@
-//PedidoRepositoryInterface.php
 <?php
 
 namespace App\Repositories\Contracts;
@@ -11,6 +10,10 @@ interface PedidoRepositoryInterface
     //** Agregacion del SOFT DELETE */
     /** DELETE /api/pedidos/{id} */
     public function delete(int $id): bool;
+
+    public function getTrashed(): Collection;
+
+    public function restore(int $id): Pedido;
 
 
     /** GET /api/pedidos (filtro opcional por estado) */

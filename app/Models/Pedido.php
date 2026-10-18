@@ -11,6 +11,8 @@ class Pedido extends Model
 {
     use SoftDeletes;
 
+    public const ESTADOS = ['pendiente', 'en_proceso', 'completado', 'cancelado'];
+
     protected $fillable = ['cliente_id', 'fecha_pedido', 'fecha_entrega', 'estado', 'total', 'direccion', 'alto', 'ancho', 'profundidad', 'material_principal', 'acabado_color', 'forma_pago', 'monto_anticipo', 'fecha_anticipo'];
 
     protected $casts = [

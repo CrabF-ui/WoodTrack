@@ -76,15 +76,18 @@
                     <div class="row g-2 align-items-end detalle-row mb-2">
                         <div class="col-md-5">
                             <label class="form-label d-md-none">Tipo de mueble / producto</label>
-                            <input class="form-control" type="text" name="detalles[{{ $indice }}][producto]" value="{{ $detalle['producto'] ?? '' }}" placeholder="Ej. Clóset, cocina, escritorio" required>
+                            <input class="form-control @error("detalles.$indice.producto") is-invalid @enderror" type="text" name="detalles[{{ $indice }}][producto]" value="{{ $detalle['producto'] ?? '' }}" placeholder="Ej. Clóset, cocina, escritorio" required>
+                            @error("detalles.$indice.producto") <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-2">
                             <label class="form-label d-md-none">Cantidad</label>
-                            <input class="form-control" type="number" min="1" name="detalles[{{ $indice }}][cantidad]" value="{{ $detalle['cantidad'] ?? 1 }}" required>
+                            <input class="form-control @error("detalles.$indice.cantidad") is-invalid @enderror" type="number" min="1" name="detalles[{{ $indice }}][cantidad]" value="{{ $detalle['cantidad'] ?? 1 }}" required>
+                            @error("detalles.$indice.cantidad") <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-3">
                             <label class="form-label d-md-none">Precio unitario</label>
-                            <input class="form-control" type="number" min="0" step="0.01" name="detalles[{{ $indice }}][precio_unitario]" value="{{ $detalle['precio_unitario'] ?? '' }}" placeholder="0.00" required>
+                            <input class="form-control @error("detalles.$indice.precio_unitario") is-invalid @enderror" type="number" min="0" step="0.01" name="detalles[{{ $indice }}][precio_unitario]" value="{{ $detalle['precio_unitario'] ?? '' }}" placeholder="0.00" required>
+                            @error("detalles.$indice.precio_unitario") <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-2 d-grid">
                             <button type="button" class="btn btn-outline-danger quitar-detalle">Quitar</button>
@@ -134,12 +137,14 @@
                     <div class="row g-2 align-items-end herraje-row mb-2">
                         <div class="col-md-8">
                             <label class="form-label d-md-none">Material / herraje</label>
-                            <input class="form-control herraje-nombre" type="text" list="herrajes-disponibles" value="{{ $materialHerraje?->nombre ?? '' }}" placeholder="Busca un herraje" autocomplete="off">
+                            <input class="form-control herraje-nombre @error("herrajes.$indice.material_id") is-invalid @enderror" type="text" list="herrajes-disponibles" value="{{ $materialHerraje?->nombre ?? '' }}" placeholder="Busca un herraje" autocomplete="off">
+                            @error("herrajes.$indice.material_id") <div class="invalid-feedback">{{ $message }}</div> @enderror
                             <input class="herraje-material-id" type="hidden" name="herrajes[{{ $indice }}][material_id]" value="{{ $herraje['material_id'] ?? '' }}">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label d-md-none">Cantidad</label>
-                            <input class="form-control" type="number" name="herrajes[{{ $indice }}][cantidad]" value="{{ $herraje['cantidad'] ?? '' }}" min="0.01" step="0.01" required>
+                            <input class="form-control @error("herrajes.$indice.cantidad") is-invalid @enderror" type="number" name="herrajes[{{ $indice }}][cantidad]" value="{{ $herraje['cantidad'] ?? '' }}" min="0.01" step="0.01" required>
+                            @error("herrajes.$indice.cantidad") <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-1 d-grid"><button type="button" class="btn btn-outline-danger quitar-herraje">Quitar</button></div>
                     </div>

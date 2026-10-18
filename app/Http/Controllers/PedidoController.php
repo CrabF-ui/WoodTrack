@@ -7,6 +7,7 @@ use App\Http\Requests\PedidoRequest;
 use App\Models\Cliente;
 use App\Models\Material;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -16,29 +17,36 @@ class PedidoController extends Controller
     {
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $validated = $request->validate([
+            'estado' => ['sometimes', 'in:activos,eliminados,todos'],
+            'q' => ['nullable', 'string', 'max:255'],
+        ]);
+        $estado = $validated['estado'] ?? 'activos';
+        $search = $validated['q'] ?? null;
+
         return view('pedidos.index', [
-            'pedidos' => $this->pedidos->getAll(),
+            'pedidos' => $this->pedidos->getFiltered($estado, $search),
+            'estado' => $estado,
+            'search' => $search,
         ]);
     }
 
-    public function trashed(): View
+    public function trashed(): RedirectResponse
     {
-        return view('pedidos.papelera', [
-            'pedidos' => $this->pedidos->getTrashed(),
-        ]);
+        return redirect()->route('pedidos.index', ['estado' => 'eliminados']);
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(Request $request, int $id): RedirectResponse
     {
         try {
             $this->pedidos->restore($id);
         } catch (StockInsuficienteException $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect()->route('pedidos.index', $this->listingFilters($request))->with('error', $e->getMessage());
         }
 
-        return redirect()->route('pedidos.trashed')->with('success', 'Pedido restaurado correctamente.');
+        return redirect()->route('pedidos.index', $this->listingFilters($request))->with('success', 'Pedido restaurado correctamente.');
     }
 
     public function create(): View
@@ -80,10 +88,15 @@ class PedidoController extends Controller
         return redirect()->route('pedidos.index')->with('success', 'Pedido actualizado correctamente.');
     }
 
-    public function destroy(int $pedido): RedirectResponse
+    public function destroy(Request $request, int $pedido): RedirectResponse
     {
         $this->pedidos->delete($pedido);
 
-        return redirect()->route('pedidos.index')->with('success', 'Pedido eliminado correctamente.');
+        return redirect()->route('pedidos.index', $this->listingFilters($request))->with('success', 'Pedido eliminado correctamente.');
+    }
+
+    private function listingFilters(Request $request): array
+    {
+        return $request->only(['estado', 'q']);
     }
 }

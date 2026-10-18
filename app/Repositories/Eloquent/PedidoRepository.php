@@ -89,6 +89,30 @@ class PedidoRepository implements PedidoRepositoryInterface
             ->get();
     }
 
+    public function getFiltered(string $estado, ?string $search = null): Collection
+    {
+        $query = Pedido::query()->with(self::RELACIONES);
+
+        if ($estado === 'eliminados') {
+            $query->onlyTrashed();
+        } elseif ($estado === 'todos') {
+            $query->withTrashed();
+        }
+
+        if ($search !== null && $search !== '') {
+            $query->where(function ($query) use ($search) {
+                $query->whereHas('cliente', fn ($clienteQuery) => $clienteQuery->where('nombre', 'like', "%{$search}%"))
+                    ->orWhere('estado', 'like', "%{$search}%");
+
+                if (is_numeric($search)) {
+                    $query->orWhere('id', (int) $search);
+                }
+            });
+        }
+
+        return $query->orderByDesc('fecha_pedido')->get();
+    }
+
     public function findById(int $id): Pedido
     {
         return Pedido::with(self::RELACIONES)->findOrFail($id);

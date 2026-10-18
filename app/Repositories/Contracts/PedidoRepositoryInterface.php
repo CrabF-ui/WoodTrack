@@ -19,6 +19,8 @@ interface PedidoRepositoryInterface
     /** GET /api/pedidos (filtro opcional por estado) */
     public function getAll(?string $estado = null): Collection;
 
+    public function getFiltered(string $estado, ?string $search = null): Collection;
+
     /** GET /api/pedidos/{id} */
     public function findById(int $id): Pedido;
 

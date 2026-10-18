@@ -1,14 +1,18 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Pedidos eliminados')
+@section('page_title', 'Pedidos eliminados')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">Pedidos eliminados</h1>
-        <a href="{{ route('pedidos.index') }}" class="btn btn-outline-secondary btn-sm">Volver a pedidos</a>
+        <p class="text-muted mb-0">Pedidos que pueden restaurarse.</p>
+        <a href="{{ route('pedidos.index') }}" class="btn btn-outline-primary btn-sm">Volver a pedidos</a>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Papelera</h2>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -28,9 +32,9 @@
                             <td class="text-end">${{ number_format((float) $pedido->total, 2) }}</td>
                             <td>{{ $pedido->deleted_at?->format('d/m/Y H:i') }}</td>
                             <td class="text-end">
-                                <form method="POST" action="{{ route('pedidos.restore', $pedido->id) }}">
+                                <form method="POST" action="{{ route('pedidos.restore', $pedido->id) }}" onsubmit="return confirm('¿Restaurar este pedido?')">
                                     @csrf
-                                    <button type="submit" class="btn btn-success btn-sm">Restaurar</button>
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">Restaurar</button>
                                 </form>
                             </td>
                         </tr>

@@ -19,8 +19,8 @@
         @method($method)
     @endif
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white"><h2 class="h5 mb-0">Datos del cliente</h2></div>
+    <div class="card mb-4">
+        <div class="card-header"><h2 class="card-title">Datos del cliente</h2></div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-6">
@@ -43,8 +43,8 @@
         </div>
     </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white"><h2 class="h5 mb-0">Descripción del mueble</h2></div>
+    <div class="card mb-4">
+        <div class="card-header"><h2 class="card-title">Descripción del mueble</h2></div>
         <div class="card-body">
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
@@ -92,13 +92,13 @@
                     </div>
                 @endforeach
             </div>
-            <button type="button" class="btn btn-sm btn-outline-success mt-2" id="agregar-detalle">Agregar mueble/producto</button>
+            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="agregar-detalle">Agregar mueble/producto</button>
             @error('detalles') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
         </div>
     </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white"><h2 class="h5 mb-0">Especificaciones técnicas y medidas</h2></div>
+    <div class="card mb-4">
+        <div class="card-header"><h2 class="card-title">Especificaciones técnicas y medidas</h2></div>
         <div class="card-body">
             <div class="row g-3">
                 @foreach (['alto' => 'Alto', 'ancho' => 'Ancho', 'profundidad' => 'Profundidad', 'material_principal' => 'Material principal', 'acabado_color' => 'Acabado / color'] as $campo => $etiqueta)
@@ -112,10 +112,10 @@
         </div>
     </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0">Herrajes utilizados</h2>
-            <button type="button" class="btn btn-sm btn-outline-success" id="agregar-herraje">Agregar herraje</button>
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="card-title">Herrajes utilizados</h2>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="agregar-herraje">Agregar herraje</button>
         </div>
         <div class="card-body">
             <datalist id="herrajes-disponibles">
@@ -149,8 +149,8 @@
         </div>
     </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white"><h2 class="h5 mb-0">Condición de pago</h2></div>
+    <div class="card mb-4">
+        <div class="card-header"><h2 class="card-title">Condición de pago</h2></div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-4">
@@ -183,8 +183,8 @@
     </div>
 
     <div class="d-flex gap-2 justify-content-end">
-        <a href="{{ route('pedidos.index') }}" class="btn btn-outline-secondary">Cancelar</a>
-        <button type="submit" class="btn btn-success">{{ $submitLabel }}</button>
+        <a href="{{ route('pedidos.index') }}" class="btn btn-outline-primary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">{{ $submitLabel }}</button>
     </div>
 </form>
 

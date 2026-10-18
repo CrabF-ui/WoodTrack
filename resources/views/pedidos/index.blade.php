@@ -1,20 +1,23 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Pedidos')
+@section('page_title', 'Pedidos')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h1 class="h3 mb-1">Pedidos</h1>
             <p class="text-muted mb-0">Gestión de pedidos de venta</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('pedidos.trashed') }}" class="btn btn-outline-secondary btn-sm">Papelera</a>
-            <a href="{{ route('pedidos.create') }}" class="btn btn-success">Crear pedido</a>
+            <a href="{{ route('pedidos.trashed') }}" class="btn btn-outline-primary btn-sm">Papelera</a>
+            <a href="{{ route('pedidos.create') }}" class="btn btn-primary">Crear pedido</a>
         </div>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Listado de pedidos</h2>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -33,7 +36,18 @@
                             <td>{{ $pedido->cliente?->nombre ?? '—' }}</td>
                             <td>{{ $pedido->fecha_pedido?->format('d/m/Y') }}</td>
                             <td>{{ $pedido->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
-                            <td><span class="badge text-bg-secondary">{{ Str::headline($pedido->estado) }}</span></td>
+                            <td>
+                                @php
+                                    $claseEstado = match ($pedido->estado) {
+                                        'pendiente' => 'text-bg-warning',
+                                        'en_proceso' => 'text-bg-primary',
+                                        'completado' => 'text-bg-success',
+                                        'cancelado' => 'text-bg-danger',
+                                        default => 'text-bg-secondary',
+                                    };
+                                @endphp
+                                <span class="badge {{ $claseEstado }}">{{ Str::headline($pedido->estado) }}</span>
+                            </td>
                             <td class="text-end">${{ number_format((float) $pedido->total, 2) }}</td>
                             <td class="text-end text-nowrap">
                                 <a href="{{ route('pedidos.edit', $pedido->id) }}" class="btn btn-sm btn-outline-primary">Ver / editar</a>

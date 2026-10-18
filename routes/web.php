@@ -12,12 +12,6 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-if (app()->environment('local')) {
-    Route::middleware('auth')->get('/prueba-layout', function () {
-        return view('prueba-layout');
-    })->name('prueba-layout');
-}
-
 Route::middleware('auth')->group(function () {
     Route::get('pedidos-papelera', [PedidoController::class, 'trashed'])->name('pedidos.trashed');
     Route::post('pedidos/{id}/restore', [PedidoController::class, 'restore'])->name('pedidos.restore');

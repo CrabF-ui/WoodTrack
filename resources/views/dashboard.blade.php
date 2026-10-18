@@ -21,7 +21,7 @@
                 <div class="card-body">
                     <h2 class="card-title">Papelera</h2>
                     <p class="card-text">Revisa y restaura pedidos eliminados.</p>
-                    <a href="{{ route('pedidos.trashed') }}" class="btn btn-outline-primary">Ver papelera</a>
+                    <a href="{{ route('pedidos.index', ['estado' => 'eliminados']) }}" class="btn btn-outline-primary">Ver papelera</a>
                 </div>
             </div>
         </div>

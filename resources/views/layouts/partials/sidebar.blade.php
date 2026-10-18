@@ -9,7 +9,7 @@
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
                 <li class="nav-header">Sistema</li>
                 <li class="nav-item">
-                    <a href="{{ Route::has('dashboard') ? route('dashboard') : url('/') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-house-door"></i><p>Inicio</p>
                     </a>
                 </li>

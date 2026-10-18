@@ -1,12 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Editar pedido')
+@section('page_title', 'Editar pedido #'.$pedido->id)
 
 @section('content')
-    <h1 class="h3 mb-3">Editar pedido #{{ $pedido->id }}</h1>
-    @if (session('error'))
-        <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
-    @endif
     @include('pedidos._form', [
         'action' => route('pedidos.update', $pedido->id),
         'method' => 'PUT',

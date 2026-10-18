@@ -1,0 +1,163 @@
+/* ==========================================================================
+   WoodTrack — tema para AdminLTE 4 (Bootstrap 5.3)
+   Colores y tipografías tomados de la landing page.
+   Cargar DESPUÉS del CSS de AdminLTE: resources/css/woodtrack-theme.css
+   ========================================================================== */
+
+/* Fuentes (las mismas de la landing). Colocar en el <head> del layout:
+   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"> */
+
+:root,
+[data-bs-theme="light"] {
+  /* Paleta de marca */
+  --wt-carbon:      #181514;   /* texto, sidebar */
+  --wt-brown:       #2C221E;   /* primario (botones) */
+  --wt-gold:        #C5A059;   /* acento */
+  --wt-gold-hover:  #D2B474;
+  --wt-gold-dark:   #8A6B2F;   /* dorado legible sobre fondo claro (texto/enlaces) */
+  --wt-cream:       #FBF8F5;   /* fondo */
+  --wt-muted:       #8C827A;   /* texto secundario */
+  --wt-line:        rgba(44, 34, 30, .12);
+
+  /* Bootstrap 5.3 */
+  --bs-body-bg:            var(--wt-cream);
+  --bs-body-color:         var(--wt-carbon);
+  --bs-body-font-family:   'Plus Jakarta Sans', system-ui, sans-serif;
+  --bs-secondary-color:    var(--wt-muted);
+  --bs-border-color:       var(--wt-line);
+  --bs-border-radius:      2px;
+  --bs-border-radius-sm:   2px;
+  --bs-border-radius-lg:   3px;
+
+  --bs-primary:            #2C221E;
+  --bs-primary-rgb:        44, 34, 30;
+  --bs-link-color:         var(--wt-gold-dark);
+  --bs-link-color-rgb:     138, 107, 47;
+  --bs-link-hover-color:   var(--wt-brown);
+  --bs-link-hover-color-rgb: 44, 34, 30;
+  --bs-focus-ring-color:   rgba(197, 160, 89, .35);
+
+  /* Los estados (success / warning / danger / info) se dejan en los
+     colores estándar de Bootstrap a propósito: son los que se reconocen
+     en stock, estatus de pedido, etc. */
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--wt-cream);
+}
+
+/* Títulos editoriales, igual que la landing */
+h1, h2, h3, .font-serif {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+/* ---------- Botones ---------- */
+.btn-primary {
+  --bs-btn-bg: #2C221E;
+  --bs-btn-border-color: #2C221E;
+  --bs-btn-hover-bg: #181514;
+  --bs-btn-hover-border-color: #181514;
+  --bs-btn-active-bg: #181514;
+  --bs-btn-active-border-color: #181514;
+  --bs-btn-disabled-bg: #8C827A;
+  --bs-btn-disabled-border-color: #8C827A;
+  --bs-btn-focus-shadow-rgb: 197, 160, 89;
+}
+.btn-outline-primary {
+  --bs-btn-color: #2C221E;
+  --bs-btn-border-color: #2C221E;
+  --bs-btn-hover-bg: #2C221E;
+  --bs-btn-hover-border-color: #2C221E;
+  --bs-btn-active-bg: #181514;
+  --bs-btn-focus-shadow-rgb: 197, 160, 89;
+}
+/* Botón de acento dorado (acciones destacadas) */
+.btn-accent {
+  --bs-btn-color: #181514;
+  --bs-btn-bg: #C5A059;
+  --bs-btn-border-color: #C5A059;
+  --bs-btn-hover-color: #181514;
+  --bs-btn-hover-bg: #D2B474;
+  --bs-btn-hover-border-color: #D2B474;
+  --bs-btn-active-bg: #D2B474;
+  --bs-btn-focus-shadow-rgb: 197, 160, 89;
+}
+
+/* Foco visible, como en la landing */
+a:focus-visible, button:focus-visible, .btn:focus-visible,
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+  outline: 2px solid var(--wt-gold);
+  outline-offset: 2px;
+  box-shadow: none;
+  border-color: var(--wt-gold);
+}
+.form-check-input:checked {
+  background-color: var(--wt-brown);
+  border-color: var(--wt-brown);
+}
+
+/* ---------- Sidebar ---------- */
+.app-sidebar {
+  background-color: var(--wt-carbon) !important;
+  border-right: 1px solid rgba(251, 248, 245, .08);
+}
+.app-sidebar .sidebar-brand {
+  border-bottom: 1px solid rgba(251, 248, 245, .1);
+}
+.app-sidebar .brand-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+  color: var(--wt-cream);
+}
+.app-sidebar .nav-link {
+  color: rgba(251, 248, 245, .72);
+}
+.app-sidebar .nav-link:hover {
+  color: var(--wt-cream);
+  background-color: rgba(251, 248, 245, .07);
+}
+.app-sidebar .nav-link.active {
+  color: var(--wt-cream) !important;
+  background-color: rgba(197, 160, 89, .16) !important;
+  box-shadow: inset 3px 0 0 var(--wt-gold);
+}
+.app-sidebar .nav-header {
+  color: var(--wt-gold);
+  font-size: .68rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+/* ---------- Barra superior ---------- */
+.app-header {
+  background-color: var(--wt-cream);
+  border-bottom: 1px solid var(--wt-line);
+}
+
+/* ---------- Tarjetas y tablas (bordes finos, estilo editorial) ---------- */
+.card {
+  border: 1px solid var(--wt-line);
+  box-shadow: none;
+  background-color: #fff;
+}
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--wt-line);
+}
+.table > thead th {
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--wt-muted);
+  font-weight: 600;
+  border-bottom-color: var(--wt-line);
+}
+.table > :not(caption) > * > * { border-bottom-color: var(--wt-line); }
+
+/* ---------- Scrollbar sutil (igual que la landing) ---------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--wt-cream); }
+::-webkit-scrollbar-thumb { background: var(--wt-muted); border-radius: 3px; }

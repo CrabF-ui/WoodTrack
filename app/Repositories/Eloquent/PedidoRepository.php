@@ -7,6 +7,7 @@ use App\Models\Material;
 use App\Models\MovimientoInventario;
 use App\Models\Pedido;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -89,7 +90,7 @@ class PedidoRepository implements PedidoRepositoryInterface
             ->get();
     }
 
-    public function getFiltered(string $estado, ?string $search = null): Collection
+    public function getFiltered(string $estado, ?string $search = null, ?string $estatus = null): LengthAwarePaginator
     {
         $query = Pedido::query()->with(self::RELACIONES);
 
@@ -97,6 +98,10 @@ class PedidoRepository implements PedidoRepositoryInterface
             $query->onlyTrashed();
         } elseif ($estado === 'todos') {
             $query->withTrashed();
+        }
+
+        if ($estatus !== null && in_array($estatus, Pedido::ESTADOS, true)) {
+            $query->where('estado', $estatus);
         }
 
         if ($search !== null && $search !== '') {
@@ -110,7 +115,7 @@ class PedidoRepository implements PedidoRepositoryInterface
             });
         }
 
-        return $query->orderByDesc('fecha_pedido')->get();
+        return $query->orderByDesc('fecha_pedido')->paginate(15)->withQueryString();
     }
 
     public function findById(int $id): Pedido

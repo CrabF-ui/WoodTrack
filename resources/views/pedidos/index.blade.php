@@ -18,6 +18,15 @@
                 <option value="todos" @selected($estado === 'todos')>Activos y eliminados</option>
             </select>
         </div>
+        <div class="col-md-3">
+            <label for="estatus" class="form-label">Estatus</label>
+            <select name="estatus" id="estatus" class="form-select">
+                <option value="" @selected($estatus === null)>Todos</option>
+                @foreach ($estadosPedido as $estadoPedido)
+                    <option value="{{ $estadoPedido }}" @selected($estatus === $estadoPedido)>{{ Str::headline($estadoPedido) }}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="col-md-6">
             <label for="q" class="form-label">Buscar</label>
             <input type="search" name="q" id="q" class="form-control" value="{{ $search }}" placeholder="Cliente, número de pedido o estado">
@@ -57,26 +66,17 @@
                                     @if ($pedido->trashed())
                                         <span class="badge text-bg-secondary">Eliminado</span>
                                     @else
-                                        @php
-                                            $claseEstado = match ($pedido->estado) {
-                                                'pendiente' => 'text-bg-warning',
-                                                'en_proceso' => 'text-bg-primary',
-                                                'completado' => 'text-bg-success',
-                                                'cancelado' => 'text-bg-danger',
-                                                default => 'text-bg-secondary',
-                                            };
-                                        @endphp
-                                        <span class="badge {{ $claseEstado }}">{{ Str::headline($pedido->estado) }}</span>
+                                        <span class="badge {{ $pedido->estado_badge_class }}">{{ $pedido->estado_label }}</span>
                                     @endif
                                 </td>
                                 <td>{{ $pedido->deleted_at?->format('d/m/Y H:i') ?? '—' }}</td>
                                 <td class="text-end">${{ number_format((float) $pedido->total, 2) }}</td>
                                 <td class="text-end text-nowrap">
                                     @if ($pedido->trashed())
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'q' => $search]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
                                     @else
                                         <a href="{{ route('pedidos.edit', $pedido->id) }}" class="btn btn-sm btn-outline-primary">Ver / editar</a>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.destroy', ['pedido' => $pedido->id, 'estado' => $estado, 'q' => $search]) }}" data-action-method="DELETE" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Eliminar">Eliminar</button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.destroy', ['pedido' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search]) }}" data-action-method="DELETE" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Eliminar">Eliminar</button>
                                     @endif
                                 </td>
                             </tr>
@@ -86,6 +86,11 @@
                     </tbody>
                 </table>
             </div>
+            @if ($pedidos->hasPages())
+                <div class="card-footer">
+                    {{ $pedidos->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -115,6 +120,7 @@
     (() => {
         const filterForm = document.getElementById('filtros-pedidos');
         const stateSelect = document.getElementById('estado');
+        const statusSelect = document.getElementById('estatus');
         const searchInput = document.getElementById('q');
         const listing = document.getElementById('listado-pedidos');
         const confirmationForm = document.getElementById('confirmarAccionFormulario');
@@ -125,6 +131,11 @@
         const buildFilterUrl = () => {
             const url = new URL(filterForm.action, window.location.origin);
             url.searchParams.set('estado', stateSelect.value);
+            if (statusSelect.value) {
+                url.searchParams.set('estatus', statusSelect.value);
+            } else {
+                url.searchParams.delete('estatus');
+            }
             if (searchInput.value.trim()) {
                 url.searchParams.set('q', searchInput.value.trim());
             } else {
@@ -164,6 +175,7 @@
         };
 
         stateSelect.addEventListener('change', () => loadListing(buildFilterUrl()));
+        statusSelect.addEventListener('change', () => loadListing(buildFilterUrl()));
         searchInput.addEventListener('input', () => {
             window.clearTimeout(debounceTimer);
             debounceTimer = window.setTimeout(() => loadListing(buildFilterUrl()), 300);
@@ -193,6 +205,7 @@
                 event.preventDefault();
                 const url = new URL(paginationLink.href);
                 stateSelect.value = url.searchParams.get('estado') || stateSelect.value;
+                statusSelect.value = url.searchParams.get('estatus') || '';
                 searchInput.value = url.searchParams.get('q') || searchInput.value;
                 loadListing(url);
             }

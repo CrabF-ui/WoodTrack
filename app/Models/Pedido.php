@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pedido extends Model
 {
@@ -22,6 +23,22 @@ class Pedido extends Model
         'total' => 'decimal:2',
         'monto_anticipo' => 'decimal:2',
     ];
+
+    protected function estadoLabel(): Attribute
+    {
+        return Attribute::get(fn (): string => str($this->estado)->replace('_', ' ')->title()->toString());
+    }
+
+    protected function estadoBadgeClass(): Attribute
+    {
+        return Attribute::get(fn (): string => match ($this->estado) {
+            self::ESTADOS[0] => 'text-bg-warning',
+            self::ESTADOS[1] => 'text-bg-info',
+            self::ESTADOS[2] => 'text-bg-success',
+            self::ESTADOS[3] => 'text-bg-danger',
+            default => 'text-bg-secondary',
+        });
+    }
 
     public function cliente(): BelongsTo
     {

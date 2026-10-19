@@ -6,6 +6,7 @@ use App\Exceptions\StockInsuficienteException;
 use App\Http\Requests\PedidoRequest;
 use App\Models\Cliente;
 use App\Models\Material;
+use App\Models\Pedido;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -22,14 +23,20 @@ class PedidoController extends Controller
         $validated = $request->validate([
             'estado' => ['sometimes', 'in:activos,eliminados,todos'],
             'q' => ['nullable', 'string', 'max:255'],
+            'estatus' => ['nullable', 'string'],
         ]);
         $estado = $validated['estado'] ?? 'activos';
         $search = $validated['q'] ?? null;
+        $estatus = isset($validated['estatus']) && in_array($validated['estatus'], Pedido::ESTADOS, true)
+            ? $validated['estatus']
+            : null;
 
         return view('pedidos.index', [
-            'pedidos' => $this->pedidos->getFiltered($estado, $search),
+            'pedidos' => $this->pedidos->getFiltered($estado, $search, $estatus),
             'estado' => $estado,
             'search' => $search,
+            'estatus' => $estatus,
+            'estadosPedido' => Pedido::ESTADOS,
         ]);
     }
 
@@ -97,6 +104,6 @@ class PedidoController extends Controller
 
     private function listingFilters(Request $request): array
     {
-        return $request->only(['estado', 'q']);
+        return $request->only(['estado', 'estatus', 'q']);
     }
 }

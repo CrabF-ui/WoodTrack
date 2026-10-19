@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Pedido;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface PedidoRepositoryInterface
@@ -19,7 +20,7 @@ interface PedidoRepositoryInterface
     /** GET /api/pedidos (filtro opcional por estado) */
     public function getAll(?string $estado = null): Collection;
 
-    public function getFiltered(string $estado, ?string $search = null): Collection;
+    public function getFiltered(string $estado, ?string $search = null, ?string $estatus = null): LengthAwarePaginator;
 
     /** GET /api/pedidos/{id} */
     public function findById(int $id): Pedido;

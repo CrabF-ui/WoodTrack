@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MovimientoInventario extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['material_id', 'tipo', 'cantidad', 'motivo', 'registrado_por', 'pedido_id', 'fecha'];
 
     protected $casts = [

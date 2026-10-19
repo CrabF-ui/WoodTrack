@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
-use App\Repositories\Contracts\PedidoRepositoryInterface;
+use App\Repositories\Contracts\InventarioRepositoryInterface;
 use App\Repositories\Contracts\MaterialRepositoryInterface;
+use App\Repositories\Contracts\PedidoRepositoryInterface;
+use App\Repositories\Eloquent\InventarioRepository;
 use App\Repositories\Eloquent\MaterialRepository;
 use App\Repositories\Eloquent\PedidoRepository;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(PedidoRepositoryInterface::class, PedidoRepository::class); //
         $this->app->bind(MaterialRepositoryInterface::class, MaterialRepository::class);
+        $this->app->bind(InventarioRepositoryInterface::class, InventarioRepository::class);
     }
 
     /**

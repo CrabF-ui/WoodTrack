@@ -4,6 +4,7 @@ namespace App\Repositories\Contracts;
 
 use App\Models\Material;
 use App\Models\MovimientoInventario;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface InventarioRepositoryInterface
@@ -25,6 +26,8 @@ interface InventarioRepositoryInterface
     public function restoreMaterial(int $id): Material;
 
     public function getMovimientosByMaterial(int $materialId): Collection;
+
+    public function getFilteredMovimientos(array $filters = []): LengthAwarePaginator;
 
     /** PUT /api/materiales/{id}/stock: registra entrada o salida y actualiza el stock */
     public function registrarMovimiento(array $data): MovimientoInventario;

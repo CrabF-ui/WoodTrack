@@ -48,10 +48,17 @@ class MovimientoInventarioController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $origen = in_array($request->query('origen'), ['inventario', 'historial'], true)
+            ? $request->query('origen')
+            : 'historial';
+
         return view('inventario.movimientos.create', [
             'materiales' => Material::orderBy('nombre')->get(),
+            'cancelarUrl' => $origen === 'inventario'
+                ? route('inventario.index')
+                : route('inventario.movimientos.index'),
         ]);
     }
 

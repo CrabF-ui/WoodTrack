@@ -6,7 +6,10 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <p class="text-muted mb-0">Historial de entradas y salidas</p>
-        <a href="{{ route('inventario.movimientos.create') }}" class="btn btn-primary">Registrar movimiento</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('inventario.index') }}" class="btn btn-outline-secondary">Volver al inventario</a>
+            <a href="{{ route('inventario.movimientos.create', ['origen' => 'historial']) }}" class="btn btn-primary">Registrar movimiento</a>
+        </div>
     </div>
 
     <form method="GET" action="{{ route('inventario.movimientos.index') }}" class="row g-2 align-items-end mb-3">

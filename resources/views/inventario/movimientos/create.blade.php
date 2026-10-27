@@ -24,7 +24,7 @@
                 <div class="col-md-3"><label for="cantidad" class="form-label">Cantidad</label><input type="number" name="cantidad" id="cantidad" class="form-control @error('cantidad') is-invalid @enderror" min="0.01" max="99999999.99" step="0.01" value="{{ old('cantidad') }}" required>@error('cantidad')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
                 <div class="col-md-6"><label for="fecha" class="form-label">Fecha</label><input type="date" name="fecha" id="fecha" class="form-control @error('fecha') is-invalid @enderror" max="{{ now()->toDateString() }}" value="{{ old('fecha', now()->toDateString()) }}">@error('fecha')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
                 <div class="col-md-6"><label for="motivo" class="form-label">Motivo (opcional)</label><input type="text" name="motivo" id="motivo" class="form-control @error('motivo') is-invalid @enderror" maxlength="255" value="{{ old('motivo') }}">@error('motivo')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
-                <div class="col-12 d-flex gap-2"><button type="submit" class="btn btn-primary">Guardar movimiento</button><a href="{{ route('inventario.movimientos.index') }}" class="btn btn-outline-secondary">Cancelar</a></div>
+                <div class="col-12 d-flex gap-2"><button type="submit" class="btn btn-primary">Guardar movimiento</button><a href="{{ $cancelarUrl }}" class="btn btn-outline-secondary">Cancelar</a></div>
             </form>
         </div>
     </div>

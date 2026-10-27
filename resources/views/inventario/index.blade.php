@@ -8,7 +8,7 @@
         <p class="text-muted mb-0">Existencias de materia prima</p>
         <div class="d-flex gap-2">
             <a href="{{ route('inventario.movimientos.index') }}" class="btn btn-outline-primary">Historial de movimientos</a>
-            <a href="{{ route('inventario.movimientos.create') }}" class="btn btn-primary">Registrar movimiento</a>
+            <a href="{{ route('inventario.movimientos.create', ['origen' => 'inventario']) }}" class="btn btn-primary">Registrar movimiento</a>
         </div>
     </div>
 

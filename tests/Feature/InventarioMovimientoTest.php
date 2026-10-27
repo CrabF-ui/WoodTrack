@@ -154,6 +154,49 @@ class InventarioMovimientoTest extends TestCase
         $this->get(route('inventario.index'))->assertRedirect(route('login'));
     }
 
+    public function test_el_historial_muestra_el_enlace_para_volver_al_inventario(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('inventario.movimientos.index'))
+            ->assertOk()
+            ->assertSee('Volver al inventario')
+            ->assertSee('href="'.route('inventario.index').'"', false);
+    }
+
+    public function test_cancelar_desde_el_inventario_regresa_a_inventario(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('inventario.movimientos.create', ['origen' => 'inventario']))
+            ->assertOk()
+            ->assertSee('href="'.route('inventario.index').'"', false);
+    }
+
+    public function test_cancelar_desde_el_historial_o_sin_origen_regresa_al_historial(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $destino = 'href="'.route('inventario.movimientos.index').'"';
+
+        $this->get(route('inventario.movimientos.create', ['origen' => 'historial']))
+            ->assertOk()
+            ->assertSee($destino, false);
+        $this->get(route('inventario.movimientos.create'))
+            ->assertOk()
+            ->assertSee($destino, false);
+    }
+
+    public function test_origen_invalido_regresa_al_historial_y_no_se_refleja_en_la_respuesta(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $origenInvalido = 'https://sitio-externo.test';
+
+        $this->get(route('inventario.movimientos.create', ['origen' => $origenInvalido]))
+            ->assertOk()
+            ->assertSee('href="'.route('inventario.movimientos.index').'"', false)
+            ->assertDontSee($origenInvalido);
+    }
+
     public function test_guardar_pedido_de_herrajes_no_cambia_stock_de_madera_ni_acabados(): void
     {
         $this->actingAs(User::factory()->create());

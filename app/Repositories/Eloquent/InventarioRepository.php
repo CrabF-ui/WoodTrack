@@ -4,8 +4,9 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Material;
 use App\Models\MovimientoInventario;
+use App\Exceptions\StockInsuficienteException;
 use App\Repositories\Contracts\InventarioRepositoryInterface;
-use DomainException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +74,31 @@ class InventarioRepository implements InventarioRepositoryInterface
             ->get();
     }
 
+    public function getFilteredMovimientos(array $filters = []): LengthAwarePaginator
+    {
+        $query = MovimientoInventario::with(array_merge(self::RELACIONES_MOVIMIENTO, ['pedido']))
+            ->when(($filters['estado'] ?? 'activos') === 'anulados', fn ($query) => $query->onlyTrashed())
+            ->when(($filters['estado'] ?? 'activos') === 'todos', fn ($query) => $query->withTrashed())
+            ->when(! empty($filters['material_id']), fn ($query) => $query->where('material_id', $filters['material_id']))
+            ->when(! empty($filters['tipo']), fn ($query) => $query->where('tipo', $filters['tipo']))
+            ->when(($filters['origen'] ?? '') === 'manual', fn ($query) => $query->whereNull('pedido_id'))
+            ->when(($filters['origen'] ?? '') === 'pedido', fn ($query) => $query->whereNotNull('pedido_id'))
+            ->when(! empty($filters['q']), function ($query) use ($filters) {
+                $search = $filters['q'];
+                $query->where(function ($query) use ($search) {
+                    $query->whereHas('material', fn ($materialQuery) => $materialQuery->where('nombre', 'like', "%{$search}%"))
+                        ->orWhere('motivo', 'like', "%{$search}%")
+                        ->orWhereHas('registradoPor', fn ($userQuery) => $userQuery->where('name', 'like', "%{$search}%"));
+
+                    if (is_numeric($search)) {
+                        $query->orWhere('pedido_id', (int) $search);
+                    }
+                });
+            });
+
+        return $query->orderByDesc('fecha')->orderByDesc('id')->paginate(15)->withQueryString();
+    }
+
     public function registrarMovimiento(array $data): MovimientoInventario
     {
         return DB::transaction(function () use ($data) {
@@ -90,6 +116,7 @@ class InventarioRepository implements InventarioRepositoryInterface
     {
         DB::transaction(function () use ($id) {
             $movimiento = MovimientoInventario::findOrFail($id);
+            $this->validarMovimientoManual($movimiento);
             $material = Material::lockForUpdate()->findOrFail($movimiento->material_id);
 
             $this->aplicarAlStock(
@@ -106,6 +133,7 @@ class InventarioRepository implements InventarioRepositoryInterface
     {
         return DB::transaction(function () use ($id) {
             $movimiento = MovimientoInventario::onlyTrashed()->findOrFail($id);
+            $this->validarMovimientoManual($movimiento);
             $material = Material::lockForUpdate()->findOrFail($movimiento->material_id);
 
             $this->aplicarAlStock($material, $movimiento->tipo, (float) $movimiento->cantidad);
@@ -128,11 +156,24 @@ class InventarioRepository implements InventarioRepositoryInterface
         $nuevoStock = round((float) $material->stock_actual + $delta, 2);
 
         if ($nuevoStock < 0) {
-            throw new DomainException("Stock insuficiente para el material '{$material->nombre}'.");
+            $stockDisponible = (float) $material->stock_actual;
+            $cantidadSolicitada = abs($delta);
+            throw new StockInsuficienteException(
+                "Stock insuficiente de '{$material->nombre}': disponible {$stockDisponible}, solicitado {$cantidadSolicitada}."
+            );
         }
 
         $material->stock_actual = $nuevoStock;
         $material->save();
+    }
+
+    private function validarMovimientoManual(MovimientoInventario $movimiento): void
+    {
+        if ($movimiento->pedido_id !== null) {
+            throw new StockInsuficienteException(
+                "El movimiento pertenece al pedido #{$movimiento->pedido_id}; corrígelo modificando el pedido."
+            );
+        }
     }
 
     private function tipoInverso(string $tipo): string

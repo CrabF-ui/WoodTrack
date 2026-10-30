@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ClienteNombreDuplicadoException;
 use App\Http\Requests\ClienteRequest;
 use App\Repositories\Contracts\ClienteRepositoryInterface;
 use Illuminate\Http\Request;
@@ -66,7 +67,11 @@ class ClienteController extends Controller
 
     public function restore(Request $request, int $id): RedirectResponse
     {
-        $this->clientes->restore($id);
+        try {
+            $this->clientes->restore($id);
+        } catch (ClienteNombreDuplicadoException $exception) {
+            return redirect()->route('clientes.index', $this->listingFilters($request))->with('error', $exception->getMessage());
+        }
 
         return redirect()->route('clientes.index', $this->listingFilters($request))->with('success', 'Cliente restaurado correctamente.');
     }

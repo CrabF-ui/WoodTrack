@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Exceptions\ClienteNombreDuplicadoException;
 use App\Models\Cliente;
 use App\Repositories\Contracts\ClienteRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -51,6 +52,11 @@ class ClienteRepository implements ClienteRepositoryInterface
     public function restore(int $id): Cliente
     {
         $cliente = Cliente::onlyTrashed()->findOrFail($id);
+
+        if (Cliente::where('nombre', $cliente->nombre)->exists()) {
+            throw new ClienteNombreDuplicadoException();
+        }
+
         $cliente->restore();
 
         return $cliente;

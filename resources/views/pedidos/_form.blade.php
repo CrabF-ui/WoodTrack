@@ -22,6 +22,11 @@
     <div class="card mb-4">
         <div class="card-header"><h2 class="card-title">Datos del cliente</h2></div>
         <div class="card-body">
+            @if ($clientes->isEmpty())
+                <div class="alert alert-warning mb-3" role="alert">
+                    No hay clientes registrados. <a href="{{ route('clientes.create') }}" class="alert-link">Registrar cliente</a>
+                </div>
+            @endif
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="cliente_id" class="form-label">Cliente</label>
@@ -189,7 +194,7 @@
 
     <div class="d-flex gap-2 justify-content-end">
         <a href="{{ route('pedidos.index') }}" class="btn btn-outline-primary">Cancelar</a>
-        <button type="submit" class="btn btn-primary">{{ $submitLabel }}</button>
+        <button type="submit" class="btn btn-primary" @disabled($clientes->isEmpty())>{{ $submitLabel }}</button>
     </div>
 </form>
 

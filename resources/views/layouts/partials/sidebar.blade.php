@@ -19,7 +19,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link"><i class="nav-icon bi bi-people"></i><p>Clientes</p></a>
+                    <a href="{{ route('clientes.index') }}" class="nav-link {{ request()->routeIs('clientes.*') ? 'active' : '' }}"><i class="nav-icon bi bi-people"></i><p>Clientes</p></a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('inventario.index') }}" class="nav-link {{ request()->routeIs('inventario.*') ? 'active' : '' }}"><i class="nav-icon bi bi-box-seam"></i><p>Inventario</p></a>

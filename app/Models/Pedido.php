@@ -42,7 +42,7 @@ class Pedido extends Model
 
     public function cliente(): BelongsTo
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->belongsTo(Cliente::class)->withTrashed();
     }
 
     public function detalles(): HasMany

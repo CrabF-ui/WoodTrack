@@ -12,6 +12,12 @@
         </div>
     </div>
 
+    {{-- Aviso de materiales con bajo stock --}}
+    <x-alerta-bajo-stock
+        :total="$totalBajoStock"
+        :filtrado="(bool) ($filters['bajo_stock'] ?? false)"
+    />
+
     <form method="GET" action="{{ route('inventario.index') }}" class="row g-2 align-items-end mb-3">
         <div class="col-md-4">
             <label for="tipo" class="form-label">Tipo de material</label>

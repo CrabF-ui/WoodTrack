@@ -62,4 +62,18 @@
             </div>
         </div>
     </div>
+    <div class="col-md-3">
+    <div class="card h-100 {{ $totalBajoStock > 0 ? 'border-warning' : '' }}">
+        <div class="card-body">
+            <h6 class="card-subtitle text-muted mb-2">Materiales en bajo stock</h6>
+            <p class="display-6 mb-2">{{ $totalBajoStock }}</p>
+
+            @if ($totalBajoStock > 0)
+                <a href="{{ route('inventario.index', ['bajo_stock' => 1]) }}">Ver materiales</a>
+            @else
+                <small class="text-success">Todo en orden</small>
+            @endif
+        </div>
+    </div>
+</div>
 @endsection

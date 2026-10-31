@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\MovimientoInventarioController;
 use App\Http\Controllers\ProfileController;
@@ -9,9 +10,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('dashboard'); // -- ¿Por qué se quitó return view('dashboard');? 
+        // --Porque al utilizar un controlador, esa instrucción deja de estar directamente en routes/web.php y pasa al método index() de DashboardController.
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/inventario', [MovimientoInventarioController::class, 'index'])->name('inventario.index');

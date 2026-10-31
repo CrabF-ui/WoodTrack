@@ -27,6 +27,7 @@ class MovimientoInventarioController extends Controller
             'materiales' => $this->inventario->getAllMateriales((bool) ($filters['bajo_stock'] ?? false))
                 ->when(isset($filters['tipo']), fn ($materiales) => $materiales->where('tipo', $filters['tipo'])->values()),
             'filters' => $filters,
+            'totalBajoStock' => $this->inventario->countBajoStock(), // total real, sin importar los filtros
         ]);
     }
 

@@ -180,4 +180,10 @@ class InventarioRepository implements InventarioRepositoryInterface
     {
         return $tipo === self::TIPO_ENTRADA ? self::TIPO_SALIDA : self::TIPO_ENTRADA;
     }
+
+    // --- ALERTA DE BAJO STOCK --- 
+    public function countBajoStock(): int
+    {
+        return Material::bajoStock()->count();
+    }
 }

@@ -37,4 +37,7 @@ interface InventarioRepositoryInterface
 
     /** Restaura el movimiento y vuelve a aplicar su efecto en el stock */
     public function restoreMovimiento(int $id): MovimientoInventario;
+
+    /** Aviso de bajo stock en Inventario */
+    public function countBajoStock(): int;
 }

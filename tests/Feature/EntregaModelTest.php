@@ -6,7 +6,6 @@ use App\Models\Cliente;
 use App\Models\Entrega;
 use App\Models\Pedido;
 use App\Models\User;
-use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use Tests\TestCase;
@@ -23,16 +22,19 @@ class EntregaModelTest extends TestCase
         $this->assertNotNull($entrega->estado_fecha_hora);
     }
 
-    public function test_un_pedido_no_puede_tener_dos_entregas(): void
+    public function test_un_pedido_puede_tener_varias_entregas_y_obtiene_la_mas_reciente(): void
     {
         $entrega = $this->createEntrega();
-
-        $this->expectException(QueryException::class);
-        Entrega::create([
+        $segundaEntrega = Entrega::create([
             'pedido_id' => $entrega->pedido_id,
             'chofer_id' => $entrega->chofer_id,
-            'fecha_asignada' => now()->toDateString(),
+            'fecha_asignada' => now()->addDay()->toDateString(),
         ]);
+
+        $pedido = Pedido::findOrFail($entrega->pedido_id);
+
+        $this->assertCount(2, $pedido->entregas);
+        $this->assertTrue($pedido->entregaActual->is($segundaEntrega));
     }
 
     public function test_cambiar_estado_actualiza_estado_y_fecha_y_rechaza_estado_invalido(): void
@@ -61,7 +63,7 @@ class EntregaModelTest extends TestCase
 
         $this->assertInstanceOf(Pedido::class, $pedido);
         $this->assertInstanceOf(User::class, $chofer);
-        $this->assertTrue($pedido->entrega->is($entrega));
+        $this->assertTrue($pedido->entregas->first()->is($entrega));
         $this->assertTrue($chofer->entregasAsignadas->first()->is($entrega));
     }
 

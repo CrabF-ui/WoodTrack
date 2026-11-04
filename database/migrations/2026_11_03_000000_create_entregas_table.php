@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('entregas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pedido_id')->unique()->constrained('pedidos')->restrictOnDelete();
+            $table->foreignId('pedido_id')->constrained('pedidos')->restrictOnDelete();
             $table->foreignId('chofer_id')->constrained('users')->restrictOnDelete();
             $table->date('fecha_asignada');
             $table->unsignedSmallInteger('orden')->nullable();
@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['chofer_id', 'fecha_asignada']);
+            $table->index('pedido_id');
         });
     }
 

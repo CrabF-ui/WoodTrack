@@ -56,8 +56,13 @@ class Pedido extends Model
         return $this->hasMany(PedidoHerraje::class);
     }
 
-    public function entrega(): HasOne
+    public function entregas(): HasMany
     {
-        return $this->hasOne(Entrega::class);
+        return $this->hasMany(Entrega::class);
+    }
+
+    public function entregaActual(): HasOne
+    {
+        return $this->hasOne(Entrega::class)->latestOfMany();
     }
 }

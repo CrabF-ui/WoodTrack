@@ -18,9 +18,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('pedidos.index') }}">Pedidos</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('entregas.index') }}">Entregas</a>
-                    </li>
                 </ul>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

@@ -1,11 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Entregas')
+@section('page_title', 'Entregas')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">Entregas</h1>
-        <a href="{{ route('entregas.create') }}" class="btn btn-success">Asignar entrega</a>
+        <p class="text-muted mb-0">Asignación y seguimiento de entregas</p>
+        <a href="{{ route('entregas.create') }}" class="btn btn-primary">Asignar entrega</a>
     </div>
 
     <form method="GET" action="{{ route('entregas.index') }}" class="row g-3 align-items-end mb-3">
@@ -23,12 +24,13 @@
             <input type="date" name="fecha" id="fecha" class="form-control" value="{{ $filtros['fecha'] ?? '' }}">
         </div>
         <div class="col-md-4 d-flex gap-2">
-            <button class="btn btn-outline-success" type="submit">Filtrar</button>
+            <button class="btn btn-outline-primary" type="submit">Filtrar</button>
             <a class="btn btn-outline-secondary" href="{{ route('entregas.index') }}">Limpiar</a>
         </div>
     </form>
 
     <div class="card">
+        <div class="card-header"><h2 class="card-title">Listado de entregas</h2></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light"><tr><th>Pedido</th><th>Cliente</th><th>Dirección</th><th>Chofer</th><th>Fecha asignada</th><th>Orden</th><th>Estado</th><th></th></tr></thead>
@@ -50,6 +52,8 @@
                 </tbody>
             </table>
         </div>
+        @if ($entregas->hasPages())
+            <div class="card-footer">{{ $entregas->links() }}</div>
+        @endif
     </div>
-    <div class="mt-3">{{ $entregas->links() }}</div>
 @endsection

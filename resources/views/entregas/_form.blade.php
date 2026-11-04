@@ -5,7 +5,7 @@
     @if (isset($entrega))
         <div class="mb-3">
             <label class="form-label">Pedido</label>
-            <div class="form-control-plaintext">#{{ $entrega->pedido_id }} — {{ $entrega->pedido->cliente->nombre ?? 'Cliente' }}</div>
+            <div class="form-control-plaintext">Entrega #{{ $entrega->id }} · Pedido #{{ $entrega->pedido_id }} — {{ $entrega->pedido->cliente->nombre ?? 'Cliente' }}</div>
         </div>
     @else
         <div class="mb-3">

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pedido extends Model
@@ -53,5 +54,15 @@ class Pedido extends Model
     public function herrajes(): HasMany
     {
         return $this->hasMany(PedidoHerraje::class);
+    }
+
+    public function entregas(): HasMany
+    {
+        return $this->hasMany(Entrega::class);
+    }
+
+    public function entregaActual(): HasOne
+    {
+        return $this->hasOne(Entrega::class)->latestOfMany();
     }
 }

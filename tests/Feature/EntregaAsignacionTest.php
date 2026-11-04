@@ -65,11 +65,11 @@ class EntregaAsignacionTest extends TestCase
         $this->actingAs(User::factory()->create());
         $choferA = User::factory()->create(['rol' => 'chofer', 'name' => 'Chofer Uno']);
         $choferB = User::factory()->create(['rol' => 'chofer', 'name' => 'Chofer Dos']);
-        $this->crearEntrega($this->pedido(), $choferA, 'pendiente', now()->toDateString());
-        $this->crearEntrega($this->pedido(), $choferB, 'pendiente', now()->addDay()->toDateString());
+        $this->crearEntrega($this->pedidoConDireccion('Dirección del chofer Uno'), $choferA, 'pendiente', now()->toDateString());
+        $this->crearEntrega($this->pedidoConDireccion('Dirección del chofer Dos'), $choferB, 'pendiente', now()->addDay()->toDateString());
 
-        $this->get(route('entregas.index', ['chofer_id' => $choferA->id]))->assertOk()->assertSee('Chofer Uno')->assertDontSee('Chofer Dos');
-        $this->get(route('entregas.index', ['fecha' => now()->addDay()->toDateString()]))->assertOk()->assertSee('Chofer Dos')->assertDontSee('Chofer Uno');
+        $this->get(route('entregas.index', ['chofer_id' => $choferA->id]))->assertOk()->assertSee('Dirección del chofer Uno')->assertDontSee('Dirección del chofer Dos');
+        $this->get(route('entregas.index', ['fecha' => now()->addDay()->toDateString()]))->assertOk()->assertSee('Dirección del chofer Dos')->assertDontSee('Dirección del chofer Uno');
     }
 
     public function test_solo_edita_entregas_pendientes_y_no_cambia_el_pedido(): void
@@ -91,10 +91,19 @@ class EntregaAsignacionTest extends TestCase
 
         $pendiente->cambiarEstado(Entrega::ESTADO_EN_CAMINO);
         $this->get(route('entregas.edit', $pendiente))->assertRedirect(route('entregas.index'))->assertSessionHas('error');
-        $this->put(route('entregas.update', $pendiente), [])->assertRedirect(route('entregas.index'))->assertSessionHas('error');
+        $this->put(route('entregas.update', $pendiente), [
+            'chofer_id' => $otroChofer->id,
+            'fecha_asignada' => now()->toDateString(),
+            'orden' => 3,
+        ])->assertRedirect(route('entregas.index'))->assertSessionHas('error');
     }
 
     private function pedido(string $estado = 'pendiente'): Pedido
+    {
+        return $this->pedidoConDireccion('Calle de prueba 10', $estado);
+    }
+
+    private function pedidoConDireccion(string $direccion, string $estado = 'pendiente'): Pedido
     {
         $cliente = Cliente::create(['nombre' => 'Cliente de prueba', 'telefono' => null]);
 
@@ -103,7 +112,7 @@ class EntregaAsignacionTest extends TestCase
             'fecha_pedido' => now()->toDateString(),
             'estado' => $estado,
             'total' => 100,
-            'direccion' => 'Calle de prueba 10',
+            'direccion' => $direccion,
         ]);
     }
 

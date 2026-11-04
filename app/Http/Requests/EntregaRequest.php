@@ -20,7 +20,12 @@ class EntregaRequest extends FormRequest
         return [
             'pedido_id' => [
                 $soloPendientes ? 'sometimes' : 'required',
-                Rule::exists('pedidos', 'id')->whereNull('deleted_at')->where('estado', '!=', 'cancelado'),
+                Rule::exists('pedidos', 'id')->whereNull('deleted_at'),
+                function ($attribute, $value, $fail): void {
+                    if (\App\Models\Pedido::whereKey($value)->where('estado', 'cancelado')->exists()) {
+                        $fail('No se puede asignar una entrega a un pedido cancelado.');
+                    }
+                },
                 function ($attribute, $value, $fail): void {
                     $activa = Entrega::where('pedido_id', $value)
                         ->whereIn('estado', Entrega::ESTADOS_ACTIVOS)

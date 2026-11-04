@@ -270,7 +270,7 @@ class PedidoRepository implements PedidoRepositoryInterface
 
     private function validarTransicionCancelacion(Pedido $pedido, string $estadoAnterior, string $nuevoEstado): void
     {
-        if ($nuevoEstado === 'cancelado' && $estadoAnterior !== 'pendiente') {
+        if ($nuevoEstado === 'cancelado' && ! in_array($estadoAnterior, ['pendiente', 'cancelado'], true)) {
             throw new PedidoNoCancelableException('El pedido ya está en fabricación y no se puede cancelar.');
         }
 

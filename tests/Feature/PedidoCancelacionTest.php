@@ -20,7 +20,8 @@ class PedidoCancelacionTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         [$pedido, $material] = $this->pedidoConHerraje();
-        Entrega::create(['pedido_id' => $pedido->id, 'fecha_asignada' => now()->toDateString(), 'estado' => 'pendiente']);
+        $chofer = User::factory()->create(['rol' => 'chofer']);
+        Entrega::create(['pedido_id' => $pedido->id, 'chofer_id' => $chofer->id, 'fecha_asignada' => now()->toDateString(), 'estado' => 'pendiente']);
 
         $this->put(route('pedidos.update', $pedido), $this->payload($pedido, 'cancelado'))
             ->assertRedirect(route('pedidos.index'))->assertSessionHasNoErrors();
@@ -73,9 +74,10 @@ class PedidoCancelacionTest extends TestCase
     public function test_no_cancela_pedido_con_entregas_no_pendientes(): void
     {
         $this->actingAs(User::factory()->create());
+        $chofer = User::factory()->create(['rol' => 'chofer']);
         foreach (['en_camino', 'entregada', 'incidencia'] as $estadoEntrega) {
             [$pedido] = $this->pedidoConHerraje();
-            Entrega::create(['pedido_id' => $pedido->id, 'fecha_asignada' => now()->toDateString(), 'estado' => $estadoEntrega]);
+            Entrega::create(['pedido_id' => $pedido->id, 'chofer_id' => $chofer->id, 'fecha_asignada' => now()->toDateString(), 'estado' => $estadoEntrega]);
             $this->put(route('pedidos.update', $pedido), $this->payload($pedido, 'cancelado'))
                 ->assertRedirect()->assertSessionHas('error', 'El pedido tiene una entrega que ya no está pendiente y no se puede cancelar.');
             $this->assertSame('pendiente', $pedido->fresh()->estado);
@@ -86,9 +88,13 @@ class PedidoCancelacionTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         [$pedido, $material] = $this->pedidoConHerraje('cancelado', 10);
+        $chofer = User::factory()->create(['rol' => 'chofer']);
+        $entrega = Entrega::create(['pedido_id' => $pedido->id, 'chofer_id' => $chofer->id, 'fecha_asignada' => now()->toDateString(), 'estado' => 'pendiente']);
         $conteo = MovimientoInventario::count();
 
         $this->put(route('pedidos.update', $pedido), $this->payload($pedido, 'cancelado'))->assertRedirect(route('pedidos.index'));
+        $this->assertDatabaseHas('entregas', ['id' => $entrega->id, 'estado' => 'pendiente']);
+        $this->assertSame($conteo, MovimientoInventario::count());
         $this->delete(route('pedidos.destroy', $pedido))->assertRedirect();
         $this->post(route('pedidos.restore', $pedido->id))->assertRedirect();
 

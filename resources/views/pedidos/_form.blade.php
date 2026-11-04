@@ -56,7 +56,7 @@
                     <label for="estado" class="form-label">Estado</label>
                     <select class="form-select" id="estado" name="estado" required>
                         @foreach (['pendiente' => 'Pendiente', 'en_proceso' => 'En proceso', 'completado' => 'Completado', 'cancelado' => 'Cancelado'] as $valor => $etiqueta)
-                            <option value="{{ $valor }}" @selected(old('estado', $pedido->estado ?? 'pendiente') === $valor)>{{ $etiqueta }}</option>
+                            <option value="{{ $valor }}" @selected(old('estado', $pedido->estado ?? 'pendiente') === $valor) @disabled($valor === 'cancelado' && isset($pedido) && in_array($pedido->estado, ['en_proceso', 'completado'], true))>{{ $etiqueta }}</option>
                         @endforeach
                     </select>
                     @error('estado') <div class="text-danger small">{{ $message }}</div> @enderror

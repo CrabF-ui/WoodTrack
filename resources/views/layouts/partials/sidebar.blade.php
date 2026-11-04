@@ -25,6 +25,9 @@
                     <a href="{{ route('inventario.index') }}" class="nav-link {{ request()->routeIs('inventario.*') ? 'active' : '' }}"><i class="nav-icon bi bi-box-seam"></i><p>Inventario</p></a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('entregas.index') }}" class="nav-link {{ request()->routeIs('entregas.*') ? 'active' : '' }}"><i class="nav-icon bi bi-truck"></i><p>Entregas</p></a>
+                </li>
+                <li class="nav-item">
                     <a href="#" class="nav-link"><i class="nav-icon bi bi-person-gear"></i><p>Usuarios</p></a>
                 </li>
                 <li class="nav-item">

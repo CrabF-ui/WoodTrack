@@ -23,6 +23,8 @@ class Entrega extends Model
         self::ESTADO_INCIDENCIA,
     ];
 
+    public const ESTADOS_ACTIVOS = [self::ESTADO_PENDIENTE, self::ESTADO_EN_CAMINO];
+
     protected $fillable = [
         'pedido_id',
         'chofer_id',

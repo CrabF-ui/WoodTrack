@@ -20,6 +20,7 @@ class DashboardNavigationTest extends TestCase
             ->assertDontSee('Pedidos')
             ->assertDontSee('Clientes')
             ->assertDontSee('Entregas')
+            ->assertDontSee('Usuarios')
             ->assertDontSee(route('pedidos.index'))
             ->assertDontSee(route('clientes.index'))
             ->assertDontSee(route('entregas.index'));
@@ -33,6 +34,7 @@ class DashboardNavigationTest extends TestCase
             ->assertSee('Pedidos')
             ->assertSee('Clientes')
             ->assertSee('Entregas')
+            ->assertSee('Usuarios')
             ->assertSee('Inventario')
             ->assertSee('href="'.route('pedidos.index').'"', false)
             ->assertSee('href="'.route('clientes.index').'"', false)

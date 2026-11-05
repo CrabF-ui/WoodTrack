@@ -39,3 +39,5 @@ Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENT
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+require __DIR__.'/auth.php';

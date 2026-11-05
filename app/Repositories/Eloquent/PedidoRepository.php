@@ -3,6 +3,8 @@
 namespace App\Repositories\Eloquent;
 
 use App\Exceptions\StockInsuficienteException;
+use App\Exceptions\PedidoNoCancelableException;
+use App\Models\Entrega;
 use App\Models\Material;
 use App\Models\MovimientoInventario;
 use App\Models\Pedido;
@@ -19,9 +21,11 @@ class PedidoRepository implements PedidoRepositoryInterface
     {
         return DB::transaction(function () use ($id) {
             $pedido = Pedido::with('herrajes')->findOrFail($id);
-            $materiales = $this->bloquearMateriales($pedido->herrajes->pluck('material_id')->all());
+            $materiales = $pedido->estado === 'cancelado'
+                ? []
+                : $this->bloquearMateriales($pedido->herrajes->pluck('material_id')->all());
 
-            foreach ($pedido->herrajes as $herraje) {
+            foreach ($pedido->estado === 'cancelado' ? [] : $pedido->herrajes as $herraje) {
                 $cantidad = $herraje->cantidad;
                 $materiales[$herraje->material_id]->increment('stock_actual', $cantidad);
 
@@ -53,15 +57,19 @@ class PedidoRepository implements PedidoRepositoryInterface
         return DB::transaction(function () use ($id) {
             $pedido = Pedido::onlyTrashed()->findOrFail($id);
             $herrajes = $pedido->herrajes()->get();
-            $materiales = $this->bloquearMateriales($herrajes->pluck('material_id')->all());
+            $materiales = $pedido->estado === 'cancelado'
+                ? []
+                : $this->bloquearMateriales($herrajes->pluck('material_id')->all());
             $lineasHerrajes = $herrajes->map(fn ($herraje) => [
                 'material_id' => $herraje->material_id,
                 'cantidad' => $herraje->cantidad,
             ])->all();
 
-            $this->validarStock($lineasHerrajes, $materiales);
+            if ($pedido->estado !== 'cancelado') {
+                $this->validarStock($lineasHerrajes, $materiales);
+            }
 
-            foreach ($herrajes as $herraje) {
+            foreach ($pedido->estado === 'cancelado' ? [] : $herrajes as $herraje) {
                 $cantidad = $herraje->cantidad;
                 $materiales[$herraje->material_id]->decrement('stock_actual', $cantidad);
 
@@ -153,11 +161,56 @@ class PedidoRepository implements PedidoRepositoryInterface
     {
         return DB::transaction(function () use ($id, $data) {
             $pedido = Pedido::findOrFail($id);
+            $estadoAnterior = $pedido->estado;
+            $nuevoEstado = $data['estado'] ?? $estadoAnterior;
+            $this->validarTransicionCancelacion($pedido, $estadoAnterior, $nuevoEstado);
             $tieneHerrajes = array_key_exists('herrajes', $data);
             $herrajes = $data['herrajes'] ?? [];
             unset($data['herrajes']);
 
-            if ($tieneHerrajes) {
+            $cambioEstado = $nuevoEstado !== $estadoAnterior;
+            $materiales = [];
+
+            if ($cambioEstado && $nuevoEstado === 'cancelado') {
+                $entregas = $pedido->entregas()->get();
+                if ($entregas->contains(fn (Entrega $entrega) => $entrega->estado !== Entrega::ESTADO_PENDIENTE)) {
+                    throw new PedidoNoCancelableException('El pedido tiene una entrega que ya no está pendiente y no se puede cancelar.');
+                }
+                $entregas->each->delete();
+                $herrajesActuales = $pedido->herrajes()->get();
+                $materiales = $this->bloquearMateriales($herrajesActuales->pluck('material_id')->all());
+                foreach ($herrajesActuales as $herraje) {
+                    $materiales[$herraje->material_id]->increment('stock_actual', $herraje->cantidad);
+                    MovimientoInventario::create([
+                        'material_id' => $herraje->material_id,
+                        'tipo' => 'entrada',
+                        'cantidad' => $herraje->cantidad,
+                        'motivo' => "Devolución por cancelación de pedido #{$pedido->id}",
+                        'registrado_por' => auth()->id(),
+                        'pedido_id' => $pedido->id,
+                        'fecha' => now(),
+                    ]);
+                }
+            } elseif ($cambioEstado && $estadoAnterior === 'cancelado' && $nuevoEstado === 'pendiente') {
+                $herrajesActuales = $pedido->herrajes()->get();
+                $lineas = $herrajesActuales->map(fn ($h) => ['material_id' => $h->material_id, 'cantidad' => $h->cantidad])->all();
+                $materiales = $this->bloquearMateriales($herrajesActuales->pluck('material_id')->all());
+                $this->validarStock($lineas, $materiales);
+                foreach ($herrajesActuales as $herraje) {
+                    $materiales[$herraje->material_id]->decrement('stock_actual', $herraje->cantidad);
+                    MovimientoInventario::create([
+                        'material_id' => $herraje->material_id,
+                        'tipo' => 'salida',
+                        'cantidad' => $herraje->cantidad,
+                        'motivo' => "Reactivación de pedido #{$pedido->id}",
+                        'registrado_por' => auth()->id(),
+                        'pedido_id' => $pedido->id,
+                        'fecha' => now(),
+                    ]);
+                }
+            }
+
+            if ($tieneHerrajes && $estadoAnterior !== 'cancelado' && ! ($cambioEstado && $nuevoEstado === 'cancelado')) {
                 $herrajesAnteriores = $pedido->herrajes()->get();
                 $materiales = $this->bloquearMateriales(
                     $herrajesAnteriores->pluck('material_id')
@@ -196,7 +249,7 @@ class PedidoRepository implements PedidoRepositoryInterface
                 $data['total'] = $this->calcularTotal($detalles);
             }
 
-            if ($tieneHerrajes) {
+            if ($tieneHerrajes && $estadoAnterior !== 'cancelado' && ! ($cambioEstado && $nuevoEstado === 'cancelado')) {
                 if ($herrajes !== []) {
                     $pedido->herrajes()->createMany($herrajes);
                 }
@@ -213,6 +266,17 @@ class PedidoRepository implements PedidoRepositoryInterface
     public function updateEstado(int $id, string $estado): Pedido
     {
         return $this->update($id, ['estado' => $estado]);
+    }
+
+    private function validarTransicionCancelacion(Pedido $pedido, string $estadoAnterior, string $nuevoEstado): void
+    {
+        if ($nuevoEstado === 'cancelado' && ! in_array($estadoAnterior, ['pendiente', 'cancelado'], true)) {
+            throw new PedidoNoCancelableException('El pedido ya está en fabricación y no se puede cancelar.');
+        }
+
+        if ($estadoAnterior === 'cancelado' && $nuevoEstado !== 'pendiente' && $nuevoEstado !== 'cancelado') {
+            throw new PedidoNoCancelableException('Un pedido cancelado solo puede volver al estado pendiente.');
+        }
     }
 
     private function calcularTotal(array $detalles): float

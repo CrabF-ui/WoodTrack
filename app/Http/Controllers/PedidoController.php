@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\StockInsuficienteException;
+use App\Exceptions\PedidoNoCancelableException;
 use App\Http\Requests\PedidoRequest;
 use App\Models\Cliente;
 use App\Models\Material;
@@ -88,7 +89,7 @@ class PedidoController extends Controller
     {
         try {
             $this->pedidos->update($pedido, $request->validated());
-        } catch (StockInsuficienteException $e) {
+        } catch (StockInsuficienteException|PedidoNoCancelableException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
 

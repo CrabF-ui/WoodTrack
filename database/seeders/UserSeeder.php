@@ -10,7 +10,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $users = [
-            ['name' => 'Dueña WoodTrack', 'email' => 'admin@woodtrack.test', 'rol' => 'admin'],
+            ['name' => 'Administración WoodTrack', 'email' => 'admin@woodtrack.test', 'rol' => 'admin'],
             ['name' => 'Encargado Inventario', 'email' => 'inventario@woodtrack.test', 'rol' => 'encargado_inventario'],
             ['name' => 'Chofer Prueba', 'email' => 'chofer@woodtrack.test', 'rol' => 'chofer'],
         ];

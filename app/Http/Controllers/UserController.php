@@ -35,8 +35,6 @@ class UserController extends Controller
     public function store(UserStoreRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $data['email_verified_at'] = now();
-        $data['activo'] = true;
         $this->users->create($data);
 
         return redirect()->route('usuarios.index', $this->listingFilters($request))->with('success', 'Usuario creado correctamente.');

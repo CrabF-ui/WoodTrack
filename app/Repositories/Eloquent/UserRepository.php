@@ -33,9 +33,12 @@ class UserRepository implements UserRepositoryInterface
 
     public function create(array $data): User
     {
-        $data['activo'] = true;
+        $user = new User($data);
+        $user->activo = true;
+        $user->email_verified_at = now();
+        $user->save();
 
-        return User::create($data);
+        return $user;
     }
 
     public function update(int $id, array $data): User

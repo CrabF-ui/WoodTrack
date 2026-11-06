@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -58,14 +57,14 @@ class UserController extends Controller
         $filters = $this->listingFilters($request);
         $this->users->update($usuario, $data);
 
-        return redirect()->route('usuarios.edit', ['usuario' => $usuario] + $filters)->with('success', 'Usuario actualizado correctamente.');
+        return redirect()->route('usuarios.index', $filters)->with('success', 'Usuario actualizado correctamente.');
     }
 
     public function resetPassword(UserPasswordRequest $request, int $usuario): RedirectResponse
     {
         $this->users->updatePassword($usuario, $request->validated('password'));
 
-        return redirect()->route('usuarios.edit', ['usuario' => $usuario] + $this->listingFilters($request))->with('success', 'Contraseña restablecida correctamente.');
+        return redirect()->route('usuarios.index', $this->listingFilters($request))->with('success', 'Contraseña restablecida correctamente.');
     }
 
     public function deactivate(Request $request, int $usuario): RedirectResponse

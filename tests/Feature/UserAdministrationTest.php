@@ -19,6 +19,44 @@ class UserAdministrationTest extends TestCase
         $this->actingAs(User::factory()->create())->get(route('usuarios.index'))->assertOk();
     }
 
+    public function test_user_listing_uses_confirmation_modal_without_native_dialogs(): void
+    {
+        $this->actingAs(User::factory()->create());
+        User::factory()->chofer()->create(['name' => 'Usuario "de prueba"']);
+        User::factory()->inactivo()->create(['name' => 'Usuario inactivo']);
+
+        $this->get(route('usuarios.index'))
+            ->assertOk()
+            ->assertDontSee('data-action-label="Reactivar"', false);
+
+        $this->get(route('usuarios.index', ['estado' => 'todos']))
+            ->assertOk()
+            ->assertSee('confirmarAccionModal')
+            ->assertSee('data-action-method="PATCH"', false)
+            ->assertSee('data-action-label="Desactivar"', false)
+            ->assertSee('data-action-label="Reactivar"', false)
+            ->assertSee('data-client-name="Usuario &quot;de prueba&quot;"', false)
+            ->assertSee('No podrá iniciar sesión, pero se conservará su historial.', false)
+            ->assertSee('Podrá volver a iniciar sesión.', false)
+            ->assertDontSee('confirm(', false)
+            ->assertDontSee('alert(', false);
+    }
+
+    public function test_success_flash_is_rendered_once_on_user_listing_and_edit_page(): void
+    {
+        $admin = User::factory()->create();
+        $target = User::factory()->chofer()->create();
+        $message = 'Usuario actualizado correctamente.';
+
+        $listing = $this->actingAs($admin)->withSession(['success' => $message])->get(route('usuarios.index'));
+        $listing->assertOk()->assertSeeText($message);
+        $this->assertSame(1, substr_count(strip_tags($listing->getContent()), $message));
+
+        $editing = $this->withSession(['success' => $message])->get(route('usuarios.edit', $target));
+        $editing->assertOk()->assertSeeText($message);
+        $this->assertSame(1, substr_count(strip_tags($editing->getContent()), $message));
+    }
+
     public function test_creates_verified_active_user_and_ignores_submitted_verification_timestamp(): void
     {
         $this->actingAs(User::factory()->create())->post(route('usuarios.store'), [
@@ -50,7 +88,7 @@ class UserAdministrationTest extends TestCase
         $admin = User::factory()->create();
         $target = User::factory()->chofer()->create();
         $verifiedAt = $target->email_verified_at;
-        $this->actingAs($admin)->put(route('usuarios.update', $target), ['name' => 'Actualizado', 'email' => $target->email, 'rol' => 'encargado_inventario'])->assertRedirect(route('usuarios.edit', $target));
+        $this->actingAs($admin)->put(route('usuarios.update', $target), ['name' => 'Actualizado', 'email' => $target->email, 'rol' => 'encargado_inventario'])->assertRedirect(route('usuarios.index'));
         $this->assertDatabaseHas('users', ['id' => $target->id, 'name' => 'Actualizado', 'rol' => 'encargado_inventario']);
         $this->assertEquals($verifiedAt, $target->refresh()->email_verified_at);
     }
@@ -59,7 +97,7 @@ class UserAdministrationTest extends TestCase
     {
         $admin = User::factory()->create();
         $target = User::factory()->chofer()->create();
-        $this->actingAs($admin)->patch(route('usuarios.password', $target), ['password' => 'Nueva-Fuerte-Password-2026', 'password_confirmation' => 'Nueva-Fuerte-Password-2026'])->assertRedirect(route('usuarios.edit', $target));
+        $this->actingAs($admin)->patch(route('usuarios.password', $target), ['password' => 'Nueva-Fuerte-Password-2026', 'password_confirmation' => 'Nueva-Fuerte-Password-2026'])->assertRedirect(route('usuarios.index'));
         $this->post(route('logout'));
         $this->post(route('login'), ['email' => $target->email, 'password' => 'Nueva-Fuerte-Password-2026'])->assertRedirect(route('dashboard'));
     }

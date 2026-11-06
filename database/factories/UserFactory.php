@@ -31,6 +31,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'rol' => User::ROL_ADMIN,
+            'activo' => true,
         ];
     }
 
@@ -57,5 +58,10 @@ class UserFactory extends Factory
     public function sinRol(): static
     {
         return $this->state(fn (array $attributes) => ['rol' => null]);
+    }
+
+    public function inactivo(): static
+    {
+        return $this->state(fn (array $attributes) => ['activo' => false]);
     }
 }

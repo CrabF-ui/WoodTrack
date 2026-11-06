@@ -50,8 +50,8 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <h2 class="card-title">Usuarios</h2>
-                        <p class="card-text">Próximamente</p>
-                        <span class="btn btn-outline-secondary disabled" aria-disabled="true">Próximamente</span>
+                        <p class="card-text">Administra las cuentas y los roles del sistema.</p>
+                        <a href="{{ route('usuarios.index') }}" class="btn btn-primary">Administrar usuarios</a>
                     </div>
                 </div>
             </div>

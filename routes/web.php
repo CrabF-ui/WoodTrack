@@ -18,10 +18,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN])->group(function () {
-    Route::resource('usuarios', UserController::class)->parameters(['usuarios' => 'usuario'])->only(['index', 'create', 'store', 'edit', 'update']);
-    Route::patch('usuarios/{usuario}/desactivar', [UserController::class, 'deactivate'])->name('usuarios.desactivar');
-    Route::patch('usuarios/{usuario}/reactivar', [UserController::class, 'reactivate'])->name('usuarios.reactivar');
-    Route::patch('usuarios/{usuario}/password', [UserController::class, 'resetPassword'])->name('usuarios.password');
+    Route::resource('usuarios', UserController::class)->parameters(['usuarios' => 'usuario'])->only(['index', 'create', 'store', 'edit', 'update'])->whereNumber('usuario');
+    Route::patch('usuarios/{usuario}/desactivar', [UserController::class, 'deactivate'])->whereNumber('usuario')->name('usuarios.desactivar');
+    Route::patch('usuarios/{usuario}/reactivar', [UserController::class, 'reactivate'])->whereNumber('usuario')->name('usuarios.reactivar');
+    Route::patch('usuarios/{usuario}/password', [UserController::class, 'resetPassword'])->whereNumber('usuario')->name('usuarios.password');
     Route::get('pedidos-papelera', [PedidoController::class, 'trashed'])->name('pedidos.trashed');
     Route::post('pedidos/{id}/restore', [PedidoController::class, 'restore'])->name('pedidos.restore');
     Route::resource('pedidos', PedidoController::class)->except(['show']);

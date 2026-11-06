@@ -20,17 +20,17 @@ class UserController extends Controller
     {
         $filters = $request->validate([
             'estado' => ['sometimes', 'in:activos,inactivos,todos'],
-            'rol' => ['nullable', 'in:admin,encargado_inventario,chofer'],
+            'filtro_rol' => ['nullable', 'in:admin,encargado_inventario,chofer'],
             'q' => ['nullable', 'string', 'max:255'],
         ]);
         $estado = $filters['estado'] ?? 'activos';
-        $rol = $filters['rol'] ?? null;
+        $rol = $filters['filtro_rol'] ?? null;
         $search = $filters['q'] ?? null;
 
-        return view('usuarios.index', ['usuarios' => $this->users->getFiltered($estado, $rol, $search), 'estado' => $estado, 'rol' => $rol, 'search' => $search]);
+        return view('usuarios.index', ['usuarios' => $this->users->getFiltered($estado, $rol, $search), 'estado' => $estado, 'filtro_rol' => $rol, 'search' => $search]);
     }
 
-    public function create(): View { return view('usuarios.create', ['filters' => request()->only(['estado', 'rol', 'q'])]); }
+    public function create(): View { return view('usuarios.create', ['filters' => request()->only(['estado', 'filtro_rol', 'q'])]); }
 
     public function store(UserStoreRequest $request): RedirectResponse
     {
@@ -44,7 +44,7 @@ class UserController extends Controller
 
     public function edit(int $usuario): View
     {
-        return view('usuarios.edit', ['usuario' => $this->users->findById($usuario), 'filters' => request()->only(['estado', 'rol', 'q'])]);
+        return view('usuarios.edit', ['usuario' => $this->users->findById($usuario), 'filters' => request()->only(['estado', 'filtro_rol', 'q'])]);
     }
 
     public function update(UserUpdateRequest $request, int $usuario): RedirectResponse
@@ -91,5 +91,5 @@ class UserController extends Controller
         return redirect()->route('usuarios.index', $this->listingFilters($request))->with('success', 'Usuario reactivado correctamente.');
     }
 
-    private function listingFilters(Request $request): array { return $request->only(['estado', 'rol', 'q']); }
+    private function listingFilters(Request $request): array { return $request->only(['estado', 'filtro_rol', 'q']); }
 }

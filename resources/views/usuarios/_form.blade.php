@@ -1,4 +1,3 @@
-@if (session('error')) <div class="alert alert-danger">{{ session('error') }}</div> @endif
 <form action="{{ $action }}" method="POST">@csrf @if ($method !== 'POST') @method($method) @endif
     <div class="card"><div class="card-header"><h2 class="card-title">Datos del usuario</h2></div><div class="card-body">
         <div class="mb-3"><label for="name" class="form-label">Nombre</label><input class="form-control @error('name') is-invalid @enderror" type="text" id="name" name="name" value="{{ old('name', $usuario->name ?? '') }}" maxlength="255" required>@error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror</div>

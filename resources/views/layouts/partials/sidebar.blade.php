@@ -33,7 +33,7 @@
                 @endif
                 @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
                     <li class="nav-item">
-                        <a href="#" class="nav-link"><i class="nav-icon bi bi-person-gear"></i><p>Usuarios</p></a>
+                        <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"><i class="nav-icon bi bi-person-gear"></i><p>Usuarios</p></a>
                     </li>
                 @endif
                 <li class="nav-item">

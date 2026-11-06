@@ -6,6 +6,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\MovimientoInventarioController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN])->group(function () {
+    Route::resource('usuarios', UserController::class)->parameters(['usuarios' => 'usuario'])->only(['index', 'create', 'store', 'edit', 'update']);
+    Route::patch('usuarios/{usuario}/desactivar', [UserController::class, 'deactivate'])->name('usuarios.desactivar');
+    Route::patch('usuarios/{usuario}/reactivar', [UserController::class, 'reactivate'])->name('usuarios.reactivar');
+    Route::patch('usuarios/{usuario}/password', [UserController::class, 'resetPassword'])->name('usuarios.password');
     Route::get('pedidos-papelera', [PedidoController::class, 'trashed'])->name('pedidos.trashed');
     Route::post('pedidos/{id}/restore', [PedidoController::class, 'restore'])->name('pedidos.restore');
     Route::resource('pedidos', PedidoController::class)->except(['show']);
@@ -37,7 +42,6 @@ Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENT
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENTARIO])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';

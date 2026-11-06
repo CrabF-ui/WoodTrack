@@ -24,6 +24,7 @@ class ProfileTest extends TestCase
     public function test_profile_information_can_be_updated_without_changing_email_even_if_sent(): void
     {
         $user = User::factory()->create();
+        $originalEmail = $user->email;
 
         $response = $this
             ->actingAs($user)
@@ -39,7 +40,7 @@ class ProfileTest extends TestCase
         $user->refresh();
 
         $this->assertSame('Test User', $user->name);
-        $this->assertSame($user->getOriginal('email'), $user->email);
+        $this->assertSame($originalEmail, $user->email);
         $this->assertNotNull($user->email_verified_at);
     }
 
@@ -50,7 +51,7 @@ class ProfileTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->delete('/profile');
-        $response->assertNotFound();
+        $response->assertStatus(405);
         $this->assertNotNull($user->fresh());
     }
 }

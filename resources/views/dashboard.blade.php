@@ -7,6 +7,7 @@
     <p class="text-muted mb-4">Hola, {{ auth()->user()->name }}.</p>
 
     <div class="row g-3">
+        @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
         <div class="col-md-6 col-xl-4">
             <div class="card h-100">
                 <div class="card-body">
@@ -34,6 +35,7 @@
                 </div>
             </div>
         </div>
+        @endif
         <div class="col-md-6 col-xl-4">
             <div class="card h-100">
                 <div class="card-body">
@@ -43,15 +45,17 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h2 class="card-title">Usuarios</h2>
-                    <p class="card-text">Próximamente</p>
-                    <span class="btn btn-outline-secondary disabled" aria-disabled="true">Próximamente</span>
+        @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-title">Usuarios</h2>
+                        <p class="card-text">Próximamente</p>
+                        <span class="btn btn-outline-secondary disabled" aria-disabled="true">Próximamente</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
         <div class="col-md-6 col-xl-4">
             <div class="card h-100">
                 <div class="card-body">

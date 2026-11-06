@@ -56,7 +56,7 @@ class EntregaAsignacionTest extends TestCase
     public function test_rechaza_usuario_que_no_es_chofer(): void
     {
         $this->actingAs(User::factory()->create());
-        $this->post(route('entregas.store'), $this->datos($this->pedido(), User::factory()->create(['rol' => 'dueno'])))
+        $this->post(route('entregas.store'), $this->datos($this->pedido(), User::factory()->create(['rol' => 'admin'])))
             ->assertSessionHasErrors('chofer_id');
     }
 

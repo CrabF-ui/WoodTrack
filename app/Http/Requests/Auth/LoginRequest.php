@@ -6,6 +6,7 @@ use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -41,6 +42,12 @@ class LoginRequest extends FormRequest
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
+
+        $user = User::where('email', $this->input('email'))->first();
+        if ($user && ! $user->activo) {
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages(['email' => 'Tu cuenta está desactivada. Contacta a un administrador.']);
+        }
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());

@@ -4,9 +4,7 @@
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
-        </p>
+        <p class="mt-1 text-sm text-gray-600">Actualiza tu nombre. Para cambiar el correo, contacta a un administrador.</p>
     </header>
 
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
@@ -25,8 +23,7 @@
 
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            <x-text-input id="email" type="email" class="mt-1 block w-full" :value="$user->email" disabled />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div>

@@ -7,11 +7,13 @@ use App\Repositories\Contracts\MaterialRepositoryInterface;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
 use App\Repositories\Contracts\ClienteRepositoryInterface;
 use App\Repositories\Contracts\EntregaRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\InventarioRepository;
 use App\Repositories\Eloquent\MaterialRepository;
 use App\Repositories\Eloquent\PedidoRepository;
 use App\Repositories\Eloquent\ClienteRepository;
 use App\Repositories\Eloquent\EntregaRepository;
+use App\Repositories\Eloquent\UserRepository;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 
@@ -27,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MaterialRepositoryInterface::class, MaterialRepository::class);
         $this->app->bind(InventarioRepositoryInterface::class, InventarioRepository::class);
         $this->app->bind(EntregaRepositoryInterface::class, EntregaRepository::class);
+        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
     }
 
     /**

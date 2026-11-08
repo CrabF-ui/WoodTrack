@@ -15,7 +15,7 @@
             <select name="chofer_id" id="chofer_id" class="form-select">
                 <option value="">Todos</option>
                 @foreach ($choferes as $chofer)
-                    <option value="{{ $chofer->id }}" @selected(($filtros['chofer_id'] ?? '') == $chofer->id)>{{ $chofer->name }}</option>
+                    <option value="{{ $chofer->id }}" @selected(($filtros['chofer_id'] ?? '') == $chofer->id)>{{ $chofer->name }}{{ $chofer->activo ? '' : ' (desactivado)' }}</option>
                 @endforeach
             </select>
         </div>

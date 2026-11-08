@@ -36,7 +36,7 @@ class EntregaRequest extends FormRequest
                     }
                 },
             ],
-            'chofer_id' => ['required', Rule::exists('users', 'id')->where('rol', 'chofer')],
+            'chofer_id' => ['required', Rule::exists('users', 'id')->where('rol', 'chofer')->where('activo', true)],
             'fecha_asignada' => ['required', 'date', ...($soloPendientes ? [] : ['after_or_equal:today'])],
             'orden' => ['nullable', 'integer', 'min:1'],
             'notas' => ['nullable', 'string', 'max:255'],
@@ -48,7 +48,7 @@ class EntregaRequest extends FormRequest
         return [
             'required' => 'El campo :attribute es obligatorio.',
             'pedido_id.exists' => 'Selecciona un pedido asignable y activo.',
-            'chofer_id.exists' => 'Selecciona un usuario con rol de chofer.',
+            'chofer_id.exists' => 'Selecciona un chofer activo.',
             'fecha_asignada.date' => 'La fecha asignada debe ser una fecha válida.',
             'fecha_asignada.after_or_equal' => 'La fecha asignada no puede ser anterior a hoy.',
             'orden.integer' => 'El orden debe ser un número entero.',

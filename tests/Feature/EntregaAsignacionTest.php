@@ -60,6 +60,70 @@ class EntregaAsignacionTest extends TestCase
             ->assertSessionHasErrors('chofer_id');
     }
 
+    public function test_rechaza_asignar_entrega_a_chofer_desactivado(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $pedido = $this->pedido();
+        $chofer = User::factory()->chofer()->inactivo()->create();
+
+        $this->post(route('entregas.store'), $this->datos($pedido, $chofer))
+            ->assertSessionHasErrors(['chofer_id' => 'Selecciona un chofer activo.']);
+
+        $this->assertDatabaseMissing('entregas', ['pedido_id' => $pedido->id]);
+    }
+
+    public function test_formulario_de_creacion_lista_solo_choferes_activos(): void
+    {
+        $this->actingAs(User::factory()->create());
+        User::factory()->chofer()->create(['name' => 'Chofer Activo']);
+        User::factory()->chofer()->inactivo()->create(['name' => 'Chofer Desactivado']);
+
+        $this->get(route('entregas.create'))
+            ->assertOk()
+            ->assertSee('Chofer Activo')
+            ->assertDontSee('Chofer Desactivado');
+    }
+
+    public function test_editar_entrega_con_chofer_desactivado_exige_un_chofer_activo(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $pedido = $this->pedido();
+        $choferDesactivado = User::factory()->chofer()->inactivo()->create(['name' => 'Chofer anterior']);
+        $choferActivo = User::factory()->chofer()->create(['name' => 'Chofer nuevo']);
+        $entrega = $this->crearEntrega($pedido, $choferDesactivado);
+
+        $this->get(route('entregas.edit', $entrega))
+            ->assertOk()
+            ->assertSee('Chofer nuevo')
+            ->assertDontSee('Chofer anterior');
+
+        $datos = [
+            'chofer_id' => $choferDesactivado->id,
+            'fecha_asignada' => now()->toDateString(),
+        ];
+        $this->put(route('entregas.update', $entrega), $datos)
+            ->assertSessionHasErrors(['chofer_id' => 'Selecciona un chofer activo.']);
+
+        $this->put(route('entregas.update', $entrega), [
+            ...$datos,
+            'chofer_id' => $choferActivo->id,
+        ])->assertRedirect(route('entregas.index'))->assertSessionHasNoErrors();
+
+        $this->assertSame($choferActivo->id, $entrega->fresh()->chofer_id);
+    }
+
+    public function test_filtro_de_entregas_incluye_y_marca_chofer_desactivado(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $chofer = User::factory()->chofer()->inactivo()->create(['name' => 'Chofer Histórico']);
+        $entrega = $this->crearEntrega($this->pedido(), $chofer);
+
+        $this->get(route('entregas.index', ['chofer_id' => $chofer->id]))
+            ->assertOk()
+            ->assertSee('Chofer Histórico (desactivado)')
+            ->assertSee('#'.$entrega->pedido_id);
+    }
+
     public function test_lista_filtra_por_chofer_y_fecha(): void
     {
         $this->actingAs(User::factory()->create());

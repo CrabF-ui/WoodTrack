@@ -74,7 +74,7 @@ class EntregaController extends Controller
             ->whereDoesntHave('entregas', fn ($query) => $query->whereIn('estado', Entrega::ESTADOS_ACTIVOS))
             ->orderByDesc('fecha_pedido')
             ->get();
-        $choferes = User::where('rol', 'chofer')->orderBy('name')->get();
+        $choferes = User::where('rol', 'chofer')->where('activo', true)->orderBy('name')->get();
 
         return [
             'pedidos' => $pedidos,

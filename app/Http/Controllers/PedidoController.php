@@ -25,18 +25,21 @@ class PedidoController extends Controller
             'estado' => ['sometimes', 'in:activos,eliminados,todos'],
             'q' => ['nullable', 'string', 'max:255'],
             'estatus' => ['nullable', 'string'],
+            'sin_entrega' => ['sometimes', 'boolean'],
         ]);
         $estado = $validated['estado'] ?? 'activos';
         $search = $validated['q'] ?? null;
         $estatus = isset($validated['estatus']) && in_array($validated['estatus'], Pedido::ESTADOS, true)
             ? $validated['estatus']
             : null;
+        $sinEntrega = $request->boolean('sin_entrega');
 
         return view('pedidos.index', [
-            'pedidos' => $this->pedidos->getFiltered($estado, $search, $estatus),
+            'pedidos' => $this->pedidos->getFiltered($estado, $search, $estatus, $sinEntrega),
             'estado' => $estado,
             'search' => $search,
             'estatus' => $estatus,
+            'sinEntrega' => $sinEntrega,
             'estadosPedido' => Pedido::ESTADOS,
         ]);
     }
@@ -105,6 +108,6 @@ class PedidoController extends Controller
 
     private function listingFilters(Request $request): array
     {
-        return $request->only(['estado', 'estatus', 'q']);
+        return $request->only(['estado', 'estatus', 'q', 'sin_entrega']);
     }
 }

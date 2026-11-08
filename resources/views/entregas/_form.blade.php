@@ -13,7 +13,7 @@
             <select name="pedido_id" id="pedido_id" class="form-select @error('pedido_id') is-invalid @enderror" required>
                 <option value="">Selecciona un pedido</option>
                 @foreach ($pedidos as $pedido)
-                    <option value="{{ $pedido->id }}" @selected(old('pedido_id') == $pedido->id)>#{{ $pedido->id }} — {{ $pedido->cliente->nombre ?? 'Cliente' }}{{ $pedido->direccion ? ' / '.$pedido->direccion : '' }}</option>
+                    <option value="{{ $pedido->id }}" @selected(old('pedido_id', $pedidoPreseleccionado ?? null) == $pedido->id)>#{{ $pedido->id }} — {{ $pedido->cliente->nombre ?? 'Cliente' }}{{ $pedido->direccion ? ' / '.$pedido->direccion : '' }}</option>
                 @endforeach
             </select>
             @error('pedido_id') <div class="invalid-feedback">{{ $message }}</div> @enderror

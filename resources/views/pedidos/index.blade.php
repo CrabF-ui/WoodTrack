@@ -9,7 +9,17 @@
         <a href="{{ route('pedidos.create') }}" class="btn btn-primary">Crear pedido</a>
     </div>
 
+    @if ($sinEntrega)
+        <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
+            <span>Mostrando solo pedidos completados sin entrega.</span>
+            <a href="{{ route('pedidos.index', request()->except('sin_entrega')) }}" class="alert-link">Quitar filtro</a>
+        </div>
+    @endif
+
     <form method="GET" action="{{ route('pedidos.index') }}" class="row g-2 align-items-end mb-3" id="filtros-pedidos">
+        @if ($sinEntrega)
+            <input type="hidden" name="sin_entrega" value="1">
+        @endif
         <div class="col-md-3">
             <label for="estado" class="form-label">Mostrar</label>
             <select name="estado" id="estado" class="form-select">
@@ -73,10 +83,13 @@
                                 <td class="text-end">${{ number_format((float) $pedido->total, 2) }}</td>
                                 <td class="text-end text-nowrap">
                                     @if ($pedido->trashed())
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
                                     @else
                                         <a href="{{ route('pedidos.edit', $pedido->id) }}" class="btn btn-sm btn-outline-primary">Ver / editar</a>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.destroy', ['pedido' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search]) }}" data-action-method="DELETE" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Eliminar">Eliminar</button>
+                                        @if ($pedido->estaCompletadoSinEntrega())
+                                            <a href="{{ route('entregas.create', ['pedido_id' => $pedido->id]) }}" class="btn btn-sm btn-outline-primary">Asignar entrega</a>
+                                        @endif
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.destroy', ['pedido' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null]) }}" data-action-method="DELETE" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Eliminar">Eliminar</button>
                                     @endif
                                 </td>
                             </tr>
@@ -122,6 +135,7 @@
         const stateSelect = document.getElementById('estado');
         const statusSelect = document.getElementById('estatus');
         const searchInput = document.getElementById('q');
+        const sinEntregaInput = filterForm.querySelector('input[name="sin_entrega"]');
         const listing = document.getElementById('listado-pedidos');
         const confirmationForm = document.getElementById('confirmarAccionFormulario');
         const confirmationMethod = document.getElementById('confirmarAccionMetodo');
@@ -130,6 +144,9 @@
 
         const buildFilterUrl = () => {
             const url = new URL(filterForm.action, window.location.origin);
+            if (sinEntregaInput?.value) {
+                url.searchParams.set('sin_entrega', sinEntregaInput.value);
+            }
             url.searchParams.set('estado', stateSelect.value);
             if (statusSelect.value) {
                 url.searchParams.set('estatus', statusSelect.value);

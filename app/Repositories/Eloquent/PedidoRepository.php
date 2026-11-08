@@ -98,18 +98,22 @@ class PedidoRepository implements PedidoRepositoryInterface
             ->get();
     }
 
-    public function getFiltered(string $estado, ?string $search = null, ?string $estatus = null): LengthAwarePaginator
+    public function getFiltered(string $estado, ?string $search = null, ?string $estatus = null, bool $sinEntrega = false): LengthAwarePaginator
     {
-        $query = Pedido::query()->with(self::RELACIONES);
+        $query = Pedido::query()->with([...self::RELACIONES, 'entregas:id,pedido_id,estado']);
 
-        if ($estado === 'eliminados') {
-            $query->onlyTrashed();
-        } elseif ($estado === 'todos') {
-            $query->withTrashed();
-        }
+        if ($sinEntrega) {
+            $query->completadosSinEntrega();
+        } else {
+            if ($estado === 'eliminados') {
+                $query->onlyTrashed();
+            } elseif ($estado === 'todos') {
+                $query->withTrashed();
+            }
 
-        if ($estatus !== null && in_array($estatus, Pedido::ESTADOS, true)) {
-            $query->where('estado', $estatus);
+            if ($estatus !== null && in_array($estatus, Pedido::ESTADOS, true)) {
+                $query->where('estado', $estatus);
+            }
         }
 
         if ($search !== null && $search !== '') {
@@ -124,6 +128,11 @@ class PedidoRepository implements PedidoRepositoryInterface
         }
 
         return $query->orderByDesc('fecha_pedido')->paginate(15)->withQueryString();
+    }
+
+    public function countCompletadosSinEntrega(): int
+    {
+        return Pedido::completadosSinEntrega()->count();
     }
 
     public function findById(int $id): Pedido

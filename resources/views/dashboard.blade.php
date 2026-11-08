@@ -35,6 +35,19 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-6 col-xl-4">
+            <div class="card h-100 {{ $totalSinEntrega > 0 ? 'border-warning' : '' }}">
+                <div class="card-body">
+                    <h6 class="card-subtitle text-muted mb-2">Pedidos completados sin entrega</h6>
+                    <p class="display-6 mb-2">{{ $totalSinEntrega }}</p>
+                    @if ($totalSinEntrega > 0)
+                        <a href="{{ route('pedidos.index', ['sin_entrega' => 1]) }}">Ver pedidos</a>
+                    @else
+                        <small class="text-success">Todo en orden</small>
+                    @endif
+                </div>
+            </div>
+        </div>
         @endif
         <div class="col-md-6 col-xl-4">
             <div class="card h-100">

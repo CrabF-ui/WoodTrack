@@ -20,7 +20,9 @@ interface PedidoRepositoryInterface
     /** GET /api/pedidos (filtro opcional por estado) */
     public function getAll(?string $estado = null): Collection;
 
-    public function getFiltered(string $estado, ?string $search = null, ?string $estatus = null): LengthAwarePaginator;
+    public function getFiltered(string $estado, ?string $search = null, ?string $estatus = null, bool $sinEntrega = false): LengthAwarePaginator;
+
+    public function countCompletadosSinEntrega(): int;
 
     /** GET /api/pedidos/{id} */
     public function findById(int $id): Pedido;

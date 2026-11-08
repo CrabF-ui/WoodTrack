@@ -31,9 +31,18 @@ class EntregaController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('entregas.create', $this->formData());
+        $data = $this->formData();
+        $requestedPedidoId = $request->query('pedido_id');
+        $pedidoId = is_scalar($requestedPedidoId)
+            ? filter_var($requestedPedidoId, FILTER_VALIDATE_INT)
+            : false;
+        $data['pedidoPreseleccionado'] = $pedidoId !== false && $data['pedidos']->contains('id', $pedidoId)
+            ? $pedidoId
+            : null;
+
+        return view('entregas.create', $data);
     }
 
     public function store(EntregaRequest $request): RedirectResponse

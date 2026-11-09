@@ -47,9 +47,9 @@ class EntregaController extends Controller
 
     public function store(EntregaRequest $request): RedirectResponse
     {
-        $this->entregas->create($request->validated());
+        $resultado = $this->entregas->create($request->validated());
 
-        return redirect()->route('entregas.index')->with('success', 'Entrega asignada correctamente.');
+        return redirect()->route('entregas.index')->with('success', $this->mensajeExito('Entrega asignada correctamente.', $resultado['recorridas']));
     }
 
     public function edit(int $entrega): View|RedirectResponse
@@ -71,9 +71,20 @@ class EntregaController extends Controller
 
         $data = $request->validated();
         unset($data['pedido_id']);
-        $this->entregas->update($entrega, $data);
+        $resultado = $this->entregas->update($entrega, $data);
 
-        return redirect()->route('entregas.index')->with('success', 'Entrega actualizada correctamente.');
+        return redirect()->route('entregas.index')->with('success', $this->mensajeExito('Entrega actualizada correctamente.', $resultado['recorridas']));
+    }
+
+    private function mensajeExito(string $mensaje, int $recorridas): string
+    {
+        if ($recorridas === 0) {
+            return $mensaje;
+        }
+
+        return $mensaje.' '.($recorridas === 1
+            ? 'Se recorrió 1 entrega.'
+            : "Se recorrieron {$recorridas} entregas.");
     }
 
     private function formData(): array

@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'rol' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'api.chofer' => \App\Http\Middleware\EnsureApiUserIsActiveChofer::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

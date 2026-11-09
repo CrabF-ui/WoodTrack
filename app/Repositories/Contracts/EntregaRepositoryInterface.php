@@ -14,7 +14,7 @@ interface EntregaRepositoryInterface
 
     public function findById(int $id): Entrega;
 
-    public function create(array $data): Entrega;
+    public function create(array $data): array;
 
-    public function update(int $id, array $data): Entrega;
+    public function update(int $id, array $data): array;
 }

@@ -7,6 +7,7 @@ use App\Repositories\Contracts\EntregaRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class EntregaRepository implements EntregaRepositoryInterface
 {
@@ -28,6 +29,30 @@ class EntregaRepository implements EntregaRepositoryInterface
             ->orderBy('orden')
             ->orderBy('id')
             ->get();
+    }
+
+    public function cambiarEstadoDeChofer(int $choferId, int $entregaId, string $estado): Entrega
+    {
+        return DB::transaction(function () use ($choferId, $entregaId, $estado): Entrega {
+            $entrega = Entrega::query()
+                ->whereKey($entregaId)
+                ->where('chofer_id', $choferId)
+                ->whereHas('pedido', fn ($query) => $query->whereNull('deleted_at'))
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (in_array($entrega->estado, [Entrega::ESTADO_ENTREGADA, Entrega::ESTADO_INCIDENCIA], true)) {
+                throw ValidationException::withMessages([
+                    'estado' => 'Esta entrega ya fue cerrada y no puede cambiar de estado.',
+                ]);
+            }
+
+            if ($entrega->estado !== $estado) {
+                $entrega->cambiarEstado($estado);
+            }
+
+            return $entrega->refresh()->load(['pedido.cliente', 'pedido.detalles']);
+        });
     }
 
     public function getFiltered(?int $choferId = null, ?string $fecha = null): LengthAwarePaginator

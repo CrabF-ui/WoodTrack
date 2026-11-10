@@ -12,6 +12,8 @@ interface EntregaRepositoryInterface
 
     public function getForChofer(int $choferId, ?string $fecha = null, ?string $estado = null): Collection;
 
+    public function cambiarEstadoDeChofer(int $choferId, int $entregaId, string $estado): Entrega;
+
     public function findById(int $id): Entrega;
 
     public function create(array $data): array;

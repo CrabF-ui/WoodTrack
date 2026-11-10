@@ -8,5 +8,8 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:ap
 
 Route::middleware(['auth:sanctum', 'api.chofer'])->group(function (): void {
     Route::get('/entregas', [EntregaController::class, 'index'])->name('api.entregas.index');
+    Route::patch('/entregas/{entrega}/estado', [EntregaController::class, 'cambiarEstado'])
+        ->whereNumber('entrega')
+        ->name('api.entregas.estado');
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
 });

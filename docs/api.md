@@ -87,3 +87,41 @@ Errores:
 - `401`: falta un token válido o venció; la app debe volver al login.
 - `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` si la cuenta está desactivada; `{"message":"Esta cuenta no tiene acceso a la app."}` si el usuario no es chofer.
 - `422`: parámetros inválidos; el cuerpo contiene `message` y `errors` con mensajes en español.
+
+## Cambiar estado de una entrega
+
+- **Método y ruta:** `PATCH /api/entregas/{entrega}/estado`
+- **Autenticación:** requiere token de Sanctum de un chofer activo. Enviar `Authorization: Bearer <token>` y `Accept: application/json`.
+- **Cuerpo:** `estado`, obligatorio; acepta únicamente `pendiente` o `en_camino`.
+
+Ejemplo `200 OK`:
+
+```json
+{
+  "data": {
+    "id": 42,
+    "fecha_asignada": "2026-11-08",
+    "orden": 1,
+    "estado": "en_camino",
+    "estado_fecha_hora": "2026-11-08T09:30:00-06:00",
+    "notas": "Llamar al llegar",
+    "pedido": {
+      "id": 18,
+      "cliente": "María Ejemplo",
+      "telefono": "5551234567",
+      "direccion": "Calle de la Madera 123",
+      "fecha_entrega": "2026-11-08",
+      "productos": [{ "producto": "Mesa de pino", "cantidad": 1 }]
+    }
+  }
+}
+```
+
+Solo permite transiciones entre `pendiente` y `en_camino`. Solicitar el mismo estado es idempotente y no actualiza `estado_fecha_hora`. No hay límite de entregas simultáneas en camino ni restricción por fecha asignada. Una entrega `entregada` o con `incidencia` ya está cerrada y no puede cambiar de estado. La entrega debe pertenecer al chofer autenticado y su pedido debe seguir activo.
+
+Errores:
+
+- `401`: falta un token válido o venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
+- `404`: la entrega no existe, pertenece a otro chofer o su pedido fue eliminado.
+- `422`: `{"message":"El estado es obligatorio.","errors":{"estado":["El estado es obligatorio."]}}`; para un valor distinto de `pendiente` o `en_camino`, el mensaje es `El estado debe ser pendiente o en_camino.`. Las entregas cerradas responden `Esta entrega ya fue cerrada y no puede cambiar de estado.`.

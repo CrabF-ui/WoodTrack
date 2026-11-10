@@ -131,7 +131,6 @@ class PedidoCancelacionTest extends TestCase
             'direccion' => $pedido->direccion,
             'detalles' => [['producto' => 'Escritorio', 'cantidad' => 1, 'precio_unitario' => 100]],
             'herrajes' => [['material_id' => $pedido->herrajes()->value('material_id'), 'cantidad' => 2]],
-            'total' => 100,
             'forma_pago' => 'Liquidado',
         ];
     }

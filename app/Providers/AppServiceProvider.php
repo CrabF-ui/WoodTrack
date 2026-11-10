@@ -16,6 +16,8 @@ use App\Repositories\Eloquent\EntregaRepository;
 use App\Repositories\Eloquent\UserRepository;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,5 +40,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
 {
     Paginator::useBootstrapFive();
+    RateLimiter::for('api-login', function (\Illuminate\Http\Request $request): Limit {
+        $valorEmail = $request->input('email');
+        $email = mb_strtolower(is_string($valorEmail) ? $valorEmail : '');
+
+        return Limit::perMinute(5)
+            ->by($email.'|'.$request->ip())
+            ->response(fn () => response()->json([
+                'message' => 'Demasiados intentos. Intenta de nuevo en un minuto.',
+            ], 429));
+    });
 }
 }

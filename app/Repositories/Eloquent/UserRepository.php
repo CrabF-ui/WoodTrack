@@ -47,6 +47,10 @@ class UserRepository implements UserRepositoryInterface
         $user->fill($data);
         $user->save();
 
+        if (($user->wasChanged('activo') && ! $user->activo) || $user->wasChanged('rol')) {
+            $user->tokens()->delete();
+        }
+
         return $user->refresh();
     }
 
@@ -55,6 +59,7 @@ class UserRepository implements UserRepositoryInterface
         $user = $this->findById($id);
         $user->password = $password;
         $user->save();
+        $user->tokens()->delete();
 
         return $user;
     }

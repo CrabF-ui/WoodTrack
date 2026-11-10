@@ -213,7 +213,6 @@ class InventarioMovimientoTest extends TestCase
             'direccion' => 'Taller',
             'detalles' => [['producto' => 'Mesa', 'cantidad' => 1, 'precio_unitario' => 100]],
             'herrajes' => [['material_id' => $herraje->id, 'cantidad' => 2]],
-            'total' => 100,
             'forma_pago' => 'Liquidado',
         ])->assertRedirect(route('pedidos.index'));
 

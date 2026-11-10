@@ -12,8 +12,7 @@ class ApiRouteProtectionTest extends TestCase
 
     public function test_todas_las_rutas_api_requieren_autenticacion_y_rol_chofer(): void
     {
-        // api/login se agregará en la tarjeta del login.
-        $excepciones = [];
+        $excepciones = ['api/login'];
 
         foreach (Route::getRoutes() as $route) {
             if (! str_starts_with($route->uri(), 'api/') || in_array($route->uri(), $excepciones, true)) {

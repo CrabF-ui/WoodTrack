@@ -14,6 +14,8 @@ interface EntregaRepositoryInterface
 
     public function cambiarEstadoDeChofer(int $choferId, int $entregaId, string $estado): Entrega;
 
+    public function registrarIncidenciaDeChofer(int $choferId, int $entregaId, string $motivo): Entrega;
+
     public function findById(int $id): Entrega;
 
     public function create(array $data): array;

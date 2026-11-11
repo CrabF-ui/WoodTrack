@@ -163,3 +163,62 @@ Errores:
 - `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
 - `404`: la entrega no existe, pertenece a otro chofer o su pedido fue eliminado.
 - `422`: motivo ausente, menor de 10 caracteres o mayor de 65535 caracteres; una entrega cerrada responde `Esta entrega ya fue cerrada y no puede cambiar de estado.`; una entrega activa con evidencia previa responde `Esta entrega ya tiene evidencia registrada.`.
+
+## Registrar la entrega con evidencia
+
+- **Método y ruta:** `POST /api/entregas/{entrega}/entregar`
+- **Autenticación:** requiere token de Sanctum de un chofer activo. Enviar `Authorization: Bearer <token>` y `Accept: application/json`.
+- **Tipo de cuerpo:** `multipart/form-data`.
+
+Campos:
+
+| Campo | Obligatorio | Descripción |
+| --- | --- | --- |
+| `receptor_nombre` | Sí | Nombre del receptor, de 2 a 120 caracteres. |
+| `fotos[]` | Sí | De 1 a 3 fotografías en formato JPG o PNG, máximo 5 MB por archivo. |
+| `firma` | No | Firma en formato JPG o PNG, máximo 5 MB. |
+| `motivo_sin_firma` | Si no hay firma | Texto de al menos 10 caracteres. No se puede enviar junto con `firma`. |
+
+Ejemplo con firma:
+
+```bash
+curl -X POST "https://ejemplo.test/api/entregas/42/entregar" \
+  -H "Authorization: Bearer <token>" \
+  -H "Accept: application/json" \
+  -F "receptor_nombre=María Ejemplo" \
+  -F "fotos[]=@foto-frente.jpg" \
+  -F "fotos[]=@foto-producto.png" \
+  -F "firma=@firma.png"
+```
+
+Ejemplo `200 OK`:
+
+```json
+{
+  "data": {
+    "id": 42,
+    "fecha_asignada": "2026-11-08",
+    "orden": 1,
+    "estado": "entregada",
+    "estado_fecha_hora": "2026-11-08T11:30:00-06:00",
+    "notas": "Llamar al llegar",
+    "pedido": {
+      "id": 18,
+      "cliente": "María Ejemplo",
+      "telefono": "5551234567",
+      "direccion": "Calle de la Madera 123",
+      "fecha_entrega": "2026-11-08",
+      "productos": [{ "producto": "Mesa de pino", "cantidad": 1 }]
+    }
+  }
+}
+```
+
+La entrega debe estar `en_camino`. El estado y la evidencia se registran de forma atómica; si falla la operación, no se conservan cambios ni archivos parciales.
+
+Errores:
+
+- `401`: falta un token válido o venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
+- `404`: la entrega no existe, pertenece a otro chofer o su pedido fue eliminado.
+- `422`: campos o archivos inválidos, formatos distintos de JPG o PNG, archivos mayores de 5 MB, entrega pendiente (`La entrega debe estar en camino para registrarla como entregada.`), entrega cerrada (`Esta entrega ya fue cerrada y no puede cambiar de estado.`) o evidencia previa (`Esta entrega ya tiene evidencia registrada.`).

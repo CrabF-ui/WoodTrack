@@ -14,5 +14,8 @@ Route::middleware(['auth:sanctum', 'api.chofer'])->group(function (): void {
     Route::post('/entregas/{entrega}/incidencia', [EntregaController::class, 'registrarIncidencia'])
         ->whereNumber('entrega')
         ->name('api.entregas.incidencia');
+    Route::post('/entregas/{entrega}/entregar', [EntregaController::class, 'entregar'])
+        ->whereNumber('entrega')
+        ->name('api.entregas.entregar');
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
 });

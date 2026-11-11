@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Entrega;
 use App\Repositories\Contracts\EntregaRepositoryInterface;
+use App\Services\EvidenciaEntregaService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,10 @@ use Illuminate\Validation\ValidationException;
 
 class EntregaRepository implements EntregaRepositoryInterface
 {
+    public function __construct(private EvidenciaEntregaService $evidencias)
+    {
+    }
+
     public function getForChofer(int $choferId, ?string $fecha = null, ?string $estado = null): Collection
     {
         $query = Entrega::query()
@@ -50,6 +55,29 @@ class EntregaRepository implements EntregaRepositoryInterface
             if ($entrega->estado !== $estado) {
                 $entrega->cambiarEstado($estado);
             }
+
+            return $entrega->refresh()->load(['pedido.cliente', 'pedido.detalles']);
+        });
+    }
+
+    public function registrarIncidenciaDeChofer(int $choferId, int $entregaId, string $motivo): Entrega
+    {
+        return DB::transaction(function () use ($choferId, $entregaId, $motivo): Entrega {
+            $entrega = Entrega::query()
+                ->whereKey($entregaId)
+                ->where('chofer_id', $choferId)
+                ->whereHas('pedido', fn ($query) => $query->whereNull('deleted_at'))
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! in_array($entrega->estado, Entrega::ESTADOS_ACTIVOS, true)) {
+                throw ValidationException::withMessages([
+                    'estado' => 'Esta entrega ya fue cerrada y no puede cambiar de estado.',
+                ]);
+            }
+
+            $this->evidencias->registrarIncidencia($entrega, $motivo);
+            $entrega->cambiarEstado(Entrega::ESTADO_INCIDENCIA);
 
             return $entrega->refresh()->load(['pedido.cliente', 'pedido.detalles']);
         });

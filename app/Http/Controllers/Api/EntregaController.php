@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ListarEntregasRequest;
 use App\Http\Requests\Api\CambiarEstadoEntregaRequest;
+use App\Http\Requests\Api\RegistrarIncidenciaRequest;
 use App\Http\Resources\EntregaResource;
 use App\Repositories\Contracts\EntregaRepositoryInterface;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,6 +30,17 @@ class EntregaController extends Controller
             $request->user()->id,
             $entrega,
             $request->validated('estado'),
+        );
+
+        return new EntregaResource($actualizada);
+    }
+
+    public function registrarIncidencia(RegistrarIncidenciaRequest $request, int $entrega, EntregaRepositoryInterface $entregas): JsonResource
+    {
+        $actualizada = $entregas->registrarIncidenciaDeChofer(
+            $request->user()->id,
+            $entrega,
+            $request->validated('motivo'),
         );
 
         return new EntregaResource($actualizada);

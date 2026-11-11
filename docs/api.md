@@ -125,3 +125,41 @@ Errores:
 - `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
 - `404`: la entrega no existe, pertenece a otro chofer o su pedido fue eliminado.
 - `422`: `{"message":"El estado es obligatorio.","errors":{"estado":["El estado es obligatorio."]}}`; para un valor distinto de `pendiente` o `en_camino`, el mensaje es `El estado debe ser pendiente o en_camino.`. Las entregas cerradas responden `Esta entrega ya fue cerrada y no puede cambiar de estado.`.
+
+## Registrar incidencia de una entrega
+
+- **Método y ruta:** `POST /api/entregas/{entrega}/incidencia`
+- **Autenticación:** requiere token de Sanctum de un chofer activo. Enviar `Authorization: Bearer <token>` y `Accept: application/json`.
+- **Cuerpo:** `motivo`, texto obligatorio de 10 a 65535 caracteres.
+
+Ejemplo `200 OK`:
+
+```json
+{
+  "data": {
+    "id": 42,
+    "fecha_asignada": "2026-11-08",
+    "orden": 1,
+    "estado": "incidencia",
+    "estado_fecha_hora": "2026-11-08T10:15:00-06:00",
+    "notas": "Llamar al llegar",
+    "pedido": {
+      "id": 18,
+      "cliente": "María Ejemplo",
+      "telefono": "5551234567",
+      "direccion": "Calle de la Madera 123",
+      "fecha_entrega": "2026-11-08",
+      "productos": [{ "producto": "Mesa de pino", "cantidad": 1 }]
+    }
+  }
+}
+```
+
+Se puede registrar una incidencia cuando la entrega está `pendiente` o `en_camino`. La operación guarda el motivo y cambia el estado a `incidencia` de forma atómica. La entrega debe pertenecer al chofer autenticado, su pedido debe seguir activo y no debe tener evidencia previa.
+
+Errores:
+
+- `401`: falta un token válido o venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
+- `404`: la entrega no existe, pertenece a otro chofer o su pedido fue eliminado.
+- `422`: motivo ausente, menor de 10 caracteres o mayor de 65535 caracteres; una entrega cerrada responde `Esta entrega ya fue cerrada y no puede cambiar de estado.`; una entrega activa con evidencia previa responde `Esta entrega ya tiene evidencia registrada.`.

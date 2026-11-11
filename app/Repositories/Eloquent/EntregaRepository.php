@@ -7,6 +7,7 @@ use App\Repositories\Contracts\EntregaRepositoryInterface;
 use App\Services\EvidenciaEntregaService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -80,6 +81,41 @@ class EntregaRepository implements EntregaRepositoryInterface
             $entrega->cambiarEstado(Entrega::ESTADO_INCIDENCIA);
 
             return $entrega->refresh()->load(['pedido.cliente', 'pedido.detalles']);
+        });
+    }
+
+    public function entregarDeChofer(
+        int $choferId,
+        int $entregaId,
+        string $receptorNombre,
+        array $fotos,
+        ?UploadedFile $firma,
+        ?string $motivoSinFirma,
+    ): Entrega {
+        return DB::transaction(function () use ($choferId, $entregaId, $receptorNombre, $fotos, $firma, $motivoSinFirma): Entrega {
+            $entrega = Entrega::query()
+                ->whereKey($entregaId)
+                ->where('chofer_id', $choferId)
+                ->whereHas('pedido', fn ($query) => $query->whereNull('deleted_at'))
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (in_array($entrega->estado, [Entrega::ESTADO_ENTREGADA, Entrega::ESTADO_INCIDENCIA], true)) {
+                throw ValidationException::withMessages([
+                    'estado' => 'Esta entrega ya fue cerrada y no puede cambiar de estado.',
+                ]);
+            }
+
+            if ($entrega->estado !== Entrega::ESTADO_EN_CAMINO) {
+                throw ValidationException::withMessages([
+                    'estado' => 'La entrega debe estar en camino para registrarla como entregada.',
+                ]);
+            }
+
+            $entrega->load(['pedido.cliente', 'pedido.detalles']);
+            $entrega->cambiarEstado(Entrega::ESTADO_ENTREGADA);
+
+            return $this->evidencias->registrarEntrega($entrega, $receptorNombre, $fotos, $firma, $motivoSinFirma);
         });
     }
 

@@ -5,6 +5,7 @@ namespace App\Repositories\Contracts;
 use App\Models\Entrega;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 
 interface EntregaRepositoryInterface
 {
@@ -15,6 +16,15 @@ interface EntregaRepositoryInterface
     public function cambiarEstadoDeChofer(int $choferId, int $entregaId, string $estado): Entrega;
 
     public function registrarIncidenciaDeChofer(int $choferId, int $entregaId, string $motivo): Entrega;
+
+    public function entregarDeChofer(
+        int $choferId,
+        int $entregaId,
+        string $receptorNombre,
+        array $fotos,
+        ?UploadedFile $firma,
+        ?string $motivoSinFirma,
+    ): Entrega;
 
     public function findById(int $id): Entrega;
 

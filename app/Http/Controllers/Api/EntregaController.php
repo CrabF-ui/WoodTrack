@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\EntregarEntregaRequest;
 use App\Http\Requests\Api\ListarEntregasRequest;
 use App\Http\Requests\Api\CambiarEstadoEntregaRequest;
 use App\Http\Requests\Api\RegistrarIncidenciaRequest;
@@ -41,6 +42,20 @@ class EntregaController extends Controller
             $request->user()->id,
             $entrega,
             $request->validated('motivo'),
+        );
+
+        return new EntregaResource($actualizada);
+    }
+
+    public function entregar(EntregarEntregaRequest $request, int $entrega, EntregaRepositoryInterface $entregas): JsonResource
+    {
+        $actualizada = $entregas->entregarDeChofer(
+            $request->user()->id,
+            $entrega,
+            $request->validated('receptor_nombre'),
+            $request->file('fotos'),
+            $request->file('firma'),
+            $request->validated('motivo_sin_firma'),
         );
 
         return new EntregaResource($actualizada);

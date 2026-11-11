@@ -137,6 +137,11 @@ class EntregaRepository implements EntregaRepositoryInterface
         return Entrega::with(['pedido.cliente', 'chofer'])->findOrFail($id);
     }
 
+    public function findWithEvidencia(int $id): Entrega
+    {
+        return Entrega::with(['pedido.cliente', 'chofer', 'fotos'])->findOrFail($id);
+    }
+
     public function create(array $data): array
     {
         return DB::transaction(function () use ($data): array {

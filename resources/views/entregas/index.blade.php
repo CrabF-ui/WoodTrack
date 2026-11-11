@@ -44,7 +44,16 @@
                             <td>{{ $entrega->fecha_asignada->format('d/m/Y') }}</td>
                             <td>{{ $entrega->orden ?? '—' }}</td>
                             <td><span class="badge {{ $entrega->estado === 'pendiente' ? 'text-bg-warning' : ($entrega->estado === 'en_camino' ? 'text-bg-info' : ($entrega->estado === 'entregada' ? 'text-bg-success' : 'text-bg-danger')) }}">{{ Str::headline($entrega->estado) }}</span></td>
-                            <td>@if ($entrega->estado === \App\Models\Entrega::ESTADO_PENDIENTE)<a href="{{ route('entregas.edit', $entrega) }}" class="btn btn-sm btn-outline-primary">Editar</a>@endif</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    @if ($entrega->estado === \App\Models\Entrega::ESTADO_PENDIENTE)
+                                        <a href="{{ route('entregas.edit', $entrega) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+                                    @endif
+                                    @if (in_array($entrega->estado, [\App\Models\Entrega::ESTADO_ENTREGADA, \App\Models\Entrega::ESTADO_INCIDENCIA], true))
+                                        <a href="{{ route('entregas.evidencia', $entrega) }}" class="btn btn-sm btn-outline-secondary">Ver evidencia</a>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr><td colspan="8" class="text-center text-muted py-4">No hay entregas para mostrar.</td></tr>

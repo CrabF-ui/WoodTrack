@@ -1,41 +1,77 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.login')
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+@section('content')
+    <main class="login-page">
+        <p class="login-brand">WoodTrack</p>
+        <p class="login-subtitle">Sistema interno · Gestión de pedidos</p>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="login-card">
+            <div class="login-card__body">
+                <form method="POST" action="{{ route('login') }}">
+                    @csrf
+
+                    <div class="login-form">
+                        <h1 class="login-title">Iniciar sesión</h1>
+
+                        @if (session('status'))
+                            <div class="status-message" role="status">
+                                {{ session('status') }}
+                            </div>
+                        @endif
+
+                        @if ($errors->any())
+                            <div class="error-message" role="alert">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 7v6"></path>
+                                    <path d="M12 17h.01"></path>
+                                </svg>
+                                <div>
+                                    <strong>No se pudo iniciar sesión.</strong><br>
+                                    {{ $errors->first() }}
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="form-field">
+                            <label class="form-label" for="email">Correo electrónico</label>
+                            <input
+                                id="email"
+                                class="form-input{{ $errors->any() ? ' form-input--invalid' : '' }}"
+                                type="email"
+                                name="email"
+                                value="{{ old('email') }}"
+                                required
+                                autofocus
+                                autocomplete="username"
+                                @if ($errors->any()) aria-invalid="true" @endif
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="password">Contraseña</label>
+                            <input
+                                id="password"
+                                class="form-input{{ $errors->any() ? ' form-input--invalid' : '' }}"
+                                type="password"
+                                name="password"
+                                required
+                                autocomplete="current-password"
+                                @if ($errors->any()) aria-invalid="true" @endif
+                            >
+                        </div>
+
+                        <label class="remember-option" for="remember">
+                            <input id="remember" type="checkbox" name="remember">
+                            <span>Mantener la sesión iniciada</span>
+                        </label>
+
+                        <button class="login-button" type="submit">Iniciar sesión</button>
+
+                        <p class="login-help">¿No tienes cuenta? Solicítala al administrador.</p>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+    </main>
+@endsection

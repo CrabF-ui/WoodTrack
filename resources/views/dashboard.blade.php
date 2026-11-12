@@ -11,27 +11,9 @@
         <div class="col-md-6 col-xl-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h2 class="card-title">Pedidos</h2>
-                    <p class="card-text">Consulta y administra los pedidos de venta.</p>
-                    <a href="{{ route('pedidos.index') }}" class="btn btn-primary">Ver pedidos</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
                     <h2 class="card-title">Papelera</h2>
                     <p class="card-text">Revisa y restaura pedidos eliminados.</p>
                     <a href="{{ route('pedidos.index', ['estado' => 'eliminados']) }}" class="btn btn-outline-primary">Ver papelera</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h2 class="card-title">Clientes</h2>
-                    <p class="card-text">Próximamente</p>
-                    <span class="btn btn-outline-secondary disabled" aria-disabled="true">Próximamente</span>
                 </div>
             </div>
         </div>
@@ -50,47 +32,18 @@
         </div>
         @endif
         <div class="col-md-6 col-xl-4">
-            <div class="card h-100">
+            <div class="card h-100 {{ $totalBajoStock > 0 ? 'border-warning' : '' }}">
                 <div class="card-body">
-                    <h2 class="card-title">Inventario</h2>
-                    <p class="card-text">Próximamente</p>
-                    <span class="btn btn-outline-secondary disabled" aria-disabled="true">Próximamente</span>
-                </div>
-            </div>
-        </div>
-        @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
-            <div class="col-md-6 col-xl-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h2 class="card-title">Usuarios</h2>
-                        <p class="card-text">Administra las cuentas y los roles del sistema.</p>
-                        <a href="{{ route('usuarios.index') }}" class="btn btn-primary">Administrar usuarios</a>
-                    </div>
-                </div>
-            </div>
-        @endif
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h2 class="card-title">Reportes</h2>
-                    <p class="card-text">Próximamente</p>
-                    <span class="btn btn-outline-secondary disabled" aria-disabled="true">Próximamente</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-    <div class="card h-100 {{ $totalBajoStock > 0 ? 'border-warning' : '' }}">
-        <div class="card-body">
-            <h6 class="card-subtitle text-muted mb-2">Materiales en bajo stock</h6>
-            <p class="display-6 mb-2">{{ $totalBajoStock }}</p>
+                    <h6 class="card-subtitle text-muted mb-2">Materiales en bajo stock</h6>
+                    <p class="display-6 mb-2">{{ $totalBajoStock }}</p>
 
-            @if ($totalBajoStock > 0)
-                <a href="{{ route('inventario.index', ['bajo_stock' => 1]) }}">Ver materiales</a>
-            @else
-                <small class="text-success">Todo en orden</small>
-            @endif
+                    @if ($totalBajoStock > 0)
+                        <a href="{{ route('inventario.index', ['bajo_stock' => 1]) }}">Ver materiales</a>
+                    @else
+                        <small class="text-success">Todo en orden</small>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
-</div>
 @endsection

@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\MovimientoInventarioController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\EntregaEvidenciaController;
 use App\Http\Controllers\ProfileController;
@@ -36,6 +37,13 @@ Route::middleware(['auth', 'rol:'.User::ROL_ADMIN])->group(function () {
 
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENTARIO])->group(function () {
     Route::get('/inventario', [MovimientoInventarioController::class, 'index'])->name('inventario.index');
+    Route::get('/inventario/materiales', [MaterialController::class, 'index'])->name('inventario.materiales.index');
+    Route::get('/inventario/materiales/create', [MaterialController::class, 'create'])->name('inventario.materiales.create');
+    Route::post('/inventario/materiales', [MaterialController::class, 'store'])->name('inventario.materiales.store');
+    Route::get('/inventario/materiales/{material}/edit', [MaterialController::class, 'edit'])->whereNumber('material')->name('inventario.materiales.edit');
+    Route::put('/inventario/materiales/{material}', [MaterialController::class, 'update'])->whereNumber('material')->name('inventario.materiales.update');
+    Route::delete('/inventario/materiales/{material}', [MaterialController::class, 'destroy'])->whereNumber('material')->name('inventario.materiales.destroy');
+    Route::post('/inventario/materiales/{id}/restore', [MaterialController::class, 'restore'])->whereNumber('id')->name('inventario.materiales.restore');
     Route::get('/inventario/movimientos', [MovimientoInventarioController::class, 'movimientos'])->name('inventario.movimientos.index');
     Route::get('/inventario/movimientos/create', [MovimientoInventarioController::class, 'create'])->name('inventario.movimientos.create');
     Route::post('/inventario/movimientos', [MovimientoInventarioController::class, 'store'])->name('inventario.movimientos.store');

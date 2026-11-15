@@ -23,7 +23,6 @@ class DashboardController extends Controller
         $datos = [
             'totalBajoStock' => $this->inventario->countBajoStock(),
             'totalSinEntrega' => $esAdmin ? $this->pedidos->countCompletadosSinEntrega() : null,
-            'stockMateriales' => $this->inventario->getStockActualVsMinimo(),
         ];
 
         if ($esAdmin) {

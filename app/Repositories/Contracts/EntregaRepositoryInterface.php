@@ -14,4 +14,7 @@ interface EntregaRepositoryInterface
     public function create(array $data): Entrega;
 
     public function update(int $id, array $data): Entrega;
+
+    /** @return array{entregadas: int, pendientes: int} */
+    public function contarEntregasDeHoy(): array;
 }

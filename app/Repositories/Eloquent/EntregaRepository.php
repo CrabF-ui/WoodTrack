@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Entrega;
 use App\Repositories\Contracts\EntregaRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 
 class EntregaRepository implements EntregaRepositoryInterface
 {
@@ -36,5 +37,25 @@ class EntregaRepository implements EntregaRepositoryInterface
         $entrega->update($data);
 
         return $entrega->refresh()->load(['pedido.cliente', 'chofer']);
+    }
+
+    public function contarEntregasDeHoy(): array
+    {
+        $estadosPendientes = [
+            Entrega::ESTADO_PENDIENTE,
+            Entrega::ESTADO_EN_CAMINO,
+            Entrega::ESTADO_INCIDENCIA,
+        ];
+
+        $entregas = Entrega::query()
+            ->whereDate('fecha_asignada', Carbon::today())
+            ->whereHas('pedido', fn ($query) => $query->whereNull('pedidos.deleted_at'))
+            ->whereIn('estado', [...$estadosPendientes, Entrega::ESTADO_ENTREGADA])
+            ->get(['estado']);
+
+        return [
+            'entregadas' => $entregas->where('estado', Entrega::ESTADO_ENTREGADA)->count(),
+            'pendientes' => $entregas->whereIn('estado', $estadosPendientes)->count(),
+        ];
     }
 }

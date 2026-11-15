@@ -2,9 +2,9 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Exceptions\StockInsuficienteException;
 use App\Models\Material;
 use App\Models\MovimientoInventario;
-use App\Exceptions\StockInsuficienteException;
 use App\Repositories\Contracts\InventarioRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -181,9 +181,86 @@ class InventarioRepository implements InventarioRepositoryInterface
         return $tipo === self::TIPO_ENTRADA ? self::TIPO_SALIDA : self::TIPO_ENTRADA;
     }
 
-    // --- ALERTA DE BAJO STOCK --- 
+    // --- ALERTA DE BAJO STOCK ---
     public function countBajoStock(): int
     {
         return Material::bajoStock()->count();
+    }
+
+    public function getStockActualVsMinimo(): \Illuminate\Support\Collection
+    {
+        return Material::query()->get()
+            ->sort(function (Material $a, Material $b): int {
+                $actualA = $this->decimalACentavos($a->stock_actual);
+                $minimoA = $this->decimalACentavos($a->stock_minimo);
+                $actualB = $this->decimalACentavos($b->stock_actual);
+                $minimoB = $this->decimalACentavos($b->stock_minimo);
+
+                if ($minimoA === null || $minimoA === 0 || $minimoB === null || $minimoB === 0) {
+                    if (($minimoA === null || $minimoA === 0) && $minimoB !== null && $minimoB > 0) {
+                        return 1;
+                    }
+                    if (($minimoB === null || $minimoB === 0) && $minimoA !== null && $minimoA > 0) {
+                        return -1;
+                    }
+                } elseif ($actualA !== null && $actualB !== null) {
+                    $ordenRelacion = $this->compararFracciones($actualA, $minimoA, $actualB, $minimoB);
+                    if ($ordenRelacion !== 0) {
+                        return $ordenRelacion;
+                    }
+                }
+
+                return strcasecmp($a->nombre, $b->nombre);
+            })
+            ->map(function (Material $material): array {
+                $actual = $this->decimalACentavos($material->stock_actual);
+                $minimo = $this->decimalACentavos($material->stock_minimo);
+
+                return [
+                    'material' => $material,
+                    // Un mínimo nulo o cero no permite calcular una relación; se ordena al final.
+                    'relacion' => $minimo !== null && $minimo > 0 && $actual !== null
+                        ? (float) $material->stock_actual / (float) $material->stock_minimo
+                        : null,
+                    'bajoStock' => $actual !== null && $minimo !== null && $actual <= $minimo,
+                ];
+            })
+            ->values();
+    }
+
+    private function decimalACentavos(string|int|float|null $valor): ?int
+    {
+        if ($valor === null) {
+            return null;
+        }
+
+        [$entero, $decimal] = array_pad(explode('.', (string) $valor, 2), 2, '');
+
+        return ((int) $entero * 100) + (int) str_pad(substr($decimal, 0, 2), 2, '0');
+    }
+
+    private function compararFracciones(int $numeradorA, int $denominadorA, int $numeradorB, int $denominadorB): int
+    {
+        $direccion = 1;
+
+        while (true) {
+            $cocienteA = intdiv($numeradorA, $denominadorA);
+            $cocienteB = intdiv($numeradorB, $denominadorB);
+
+            if ($cocienteA !== $cocienteB) {
+                return $direccion * ($cocienteA <=> $cocienteB);
+            }
+
+            $restoA = $numeradorA % $denominadorA;
+            $restoB = $numeradorB % $denominadorB;
+
+            if ($restoA === 0 || $restoB === 0) {
+                return $direccion * ($restoA <=> $restoB);
+            }
+
+            [$numeradorA, $denominadorA] = [$denominadorA, $restoA];
+            [$numeradorB, $denominadorB] = [$denominadorB, $restoB];
+            $direccion *= -1;
+        }
     }
 }

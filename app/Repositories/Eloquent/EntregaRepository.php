@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Carbon;
 
 class EntregaRepository implements EntregaRepositoryInterface
 {
@@ -203,5 +204,25 @@ class EntregaRepository implements EntregaRepositoryInterface
         }
 
         return $entregas->count();
+    }
+
+    public function contarEntregasDeHoy(): array
+    {
+        $estadosPendientes = [
+            Entrega::ESTADO_PENDIENTE,
+            Entrega::ESTADO_EN_CAMINO,
+            Entrega::ESTADO_INCIDENCIA,
+        ];
+
+        $entregas = Entrega::query()
+            ->whereDate('fecha_asignada', Carbon::today())
+            ->whereHas('pedido', fn ($query) => $query->whereNull('pedidos.deleted_at'))
+            ->whereIn('estado', [...$estadosPendientes, Entrega::ESTADO_ENTREGADA])
+            ->get(['estado']);
+
+        return [
+            'entregadas' => $entregas->where('estado', Entrega::ESTADO_ENTREGADA)->count(),
+            'pendientes' => $entregas->whereIn('estado', $estadosPendientes)->count(),
+        ];
     }
 }

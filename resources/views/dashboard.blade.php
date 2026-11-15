@@ -46,4 +46,68 @@
             </div>
         </div>
     </div>
+    <div class="row g-3 mt-3">
+        @if (in_array(auth()->user()->rol, [\App\Models\User::ROL_ADMIN, \App\Models\User::ROL_ENCARGADO_INVENTARIO], true))
+            <div class="col-12 mt-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title h5">Stock actual contra mínimo</h2>
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead><tr><th>Material</th><th>Tipo</th><th>Unidad</th><th class="text-end">Stock actual</th><th class="text-end">Stock mínimo</th><th>Estado</th></tr></thead>
+                                <tbody>
+                                    @forelse ($stockMateriales as $fila)
+                                        <tr>
+                                            <td>{{ $fila['material']->nombre }}</td>
+                                            <td>{{ ucfirst($fila['material']->tipo) }}</td>
+                                            <td>{{ $fila['material']->unidad_medida }}</td>
+                                            <td class="text-end">{{ number_format((float) $fila['material']->stock_actual, 2) }}</td>
+                                            <td class="text-end">{{ number_format((float) $fila['material']->stock_minimo, 2) }}</td>
+                                            <td><span class="badge {{ $fila['bajoStock'] ? 'text-bg-warning' : 'text-bg-success' }}">{{ $fila['bajoStock'] ? 'Bajo stock' : 'Disponible' }}</span></td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="6" class="text-muted">No hay materiales registrados.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+        @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
+            <div class="col-md-6 col-xl-4 mt-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h5">Entregas de hoy</h2>
+                        @if (array_sum($entregasHoy) === 0)
+                            <p class="text-muted mb-0">No hay entregas programadas para hoy.</p>
+                        @else
+                            <canvas id="entregas-hoy-chart" role="img" aria-label="Entregas de hoy: {{ $entregasHoy['entregadas'] }} entregadas y {{ $entregasHoy['pendientes'] }} pendientes"></canvas>
+                            <ul class="list-unstyled mt-3 mb-0">
+                                <li><span class="badge" style="background-color:#198754">&nbsp;</span> Entregadas: {{ $entregasHoy['entregadas'] }}</li>
+                                <li><span class="badge" style="background-color:#d97706">&nbsp;</span> Pendientes: {{ $entregasHoy['pendientes'] }}</li>
+                            </ul>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+</div>
 @endsection
+
+@if (auth()->user()->rol === \App\Models\User::ROL_ADMIN && array_sum($entregasHoy) > 0)
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+        <script>
+            new Chart(document.getElementById('entregas-hoy-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Entregadas', 'Pendientes'],
+                    datasets: [{ data: @json([$entregasHoy['entregadas'], $entregasHoy['pendientes']]), backgroundColor: ['#198754', '#d97706'] }],
+                },
+                options: { plugins: { legend: { position: 'bottom' } } },
+            });
+        </script>
+    @endpush
+@endif

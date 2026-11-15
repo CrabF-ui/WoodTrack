@@ -40,4 +40,7 @@ interface InventarioRepositoryInterface
 
     /** Aviso de bajo stock en Inventario */
     public function countBajoStock(): int;
+
+    /** @return \Illuminate\Support\Collection<int, array{material: Material, relacion: float|null, bajoStock: bool}> */
+    public function getStockActualVsMinimo(): \Illuminate\Support\Collection;
 }

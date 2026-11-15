@@ -2,8 +2,8 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Exceptions\StockInsuficienteException;
 use App\Exceptions\PedidoNoCancelableException;
+use App\Exceptions\StockInsuficienteException;
 use App\Models\Entrega;
 use App\Models\Material;
 use App\Models\MovimientoInventario;
@@ -11,6 +11,7 @@ use App\Models\Pedido;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class PedidoRepository implements PedidoRepositoryInterface
@@ -136,6 +137,14 @@ class PedidoRepository implements PedidoRepositoryInterface
     public function countCompletadosSinEntrega(): int
     {
         return Pedido::completadosSinEntrega()->count();
+    }
+
+    public function sumarTotalUltimos7Dias(): float
+    {
+        return (float) Pedido::query()
+            ->whereBetween('fecha_pedido', [Carbon::today()->subDays(6), Carbon::today()])
+            ->where('estado', '!=', 'cancelado')
+            ->sum('total');
     }
 
     public function findById(int $id): Pedido

@@ -36,4 +36,7 @@ interface EntregaRepositoryInterface
 
     /** @return array{entregadas: int, pendientes: int} */
     public function contarEntregasDeHoy(): array;
+
+    /** @return array{entregadas: int, asignadas: int} */
+    public function contarEntregasUltimos7Dias(): array;
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetallePedido extends Model
 {
-    protected $fillable = ['pedido_id', 'producto', 'cantidad', 'precio_unitario'];
+    protected $fillable = ['pedido_id', 'producto', 'cantidad', 'precio_unitario', 'alto', 'ancho', 'profundidad', 'material_principal', 'acabado_color'];
 
     protected $casts = [
         'precio_unitario' => 'decimal:2',

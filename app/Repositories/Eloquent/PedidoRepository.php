@@ -117,12 +117,15 @@ class PedidoRepository implements PedidoRepositoryInterface
         }
 
         if ($search !== null && $search !== '') {
-            $query->where(function ($query) use ($search) {
+            $folio = trim($search);
+            $folio = str_starts_with($folio, '#') ? substr($folio, 1) : $folio;
+
+            $query->where(function ($query) use ($search, $folio) {
                 $query->whereHas('cliente', fn ($clienteQuery) => $clienteQuery->where('nombre', 'like', "%{$search}%"))
                     ->orWhere('estado', 'like', "%{$search}%");
 
-                if (is_numeric($search)) {
-                    $query->orWhere('id', (int) $search);
+                if (is_numeric($folio)) {
+                    $query->orWhere('id', (int) $folio);
                 }
             });
         }

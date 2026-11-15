@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use InvalidArgumentException;
 
 class Entrega extends Model
@@ -33,12 +34,21 @@ class Entrega extends Model
         'notas',
         'estado',
         'estado_fecha_hora',
+        'receptor_nombre',
+        'firma_path',
+        'sin_firma',
+        'motivo_sin_firma',
+        'incidencia_motivo',
+        'accion_siguiente',
+        'regresa_a_stock',
     ];
 
     protected $casts = [
         'fecha_asignada' => 'date',
         'estado_fecha_hora' => 'datetime',
         'orden' => 'integer',
+        'sin_firma' => 'boolean',
+        'regresa_a_stock' => 'boolean',
     ];
 
     protected static function booted(): void
@@ -57,6 +67,11 @@ class Entrega extends Model
     public function chofer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'chofer_id');
+    }
+
+    public function fotos(): HasMany
+    {
+        return $this->hasMany(EntregaFoto::class);
     }
 
     public function cambiarEstado(string $estado): void

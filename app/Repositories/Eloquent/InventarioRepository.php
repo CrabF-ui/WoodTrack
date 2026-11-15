@@ -117,7 +117,7 @@ class InventarioRepository implements InventarioRepositoryInterface
         DB::transaction(function () use ($id) {
             $movimiento = MovimientoInventario::findOrFail($id);
             $this->validarMovimientoManual($movimiento);
-            $material = Material::lockForUpdate()->findOrFail($movimiento->material_id);
+            $material = Material::withTrashed()->lockForUpdate()->findOrFail($movimiento->material_id);
 
             $this->aplicarAlStock(
                 $material,
@@ -134,7 +134,7 @@ class InventarioRepository implements InventarioRepositoryInterface
         return DB::transaction(function () use ($id) {
             $movimiento = MovimientoInventario::onlyTrashed()->findOrFail($id);
             $this->validarMovimientoManual($movimiento);
-            $material = Material::lockForUpdate()->findOrFail($movimiento->material_id);
+            $material = Material::withTrashed()->lockForUpdate()->findOrFail($movimiento->material_id);
 
             $this->aplicarAlStock($material, $movimiento->tipo, (float) $movimiento->cantidad);
             $movimiento->restore();

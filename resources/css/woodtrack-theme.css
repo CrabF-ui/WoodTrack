@@ -1,60 +1,78 @@
 /* ==========================================================================
    WoodTrack — tema para AdminLTE 4 (Bootstrap 5.3)
-   Colores y tipografías tomados de la landing page.
    Cargar DESPUÉS del CSS de AdminLTE: resources/css/woodtrack-theme.css
    ========================================================================== */
 
-/* Fuentes (las mismas de la landing). Colocar en el <head> del layout:
-   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"> */
+/* Fuentes. Colocar en el <head> del layout:
+   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"> */
 
 :root,
 [data-bs-theme="light"] {
-  /* Paleta de marca */
-  --wt-carbon:      #181514;   /* texto, sidebar */
-  --wt-brown:       #2C221E;   /* primario (botones) */
-  --wt-gold:        #C5A059;   /* acento */
-  --wt-gold-hover:  #D2B474;
-  --wt-gold-dark:   #8A6B2F;   /* dorado legible sobre fondo claro (texto/enlaces) */
-  --wt-cream:       #FBF8F5;   /* fondo */
-  --wt-muted:       #8C827A;   /* texto secundario */
-  --wt-line:        rgba(44, 34, 30, .12);
+  --wt-carbon: #111315;
+  --wt-brown: #2C221E;
+  --wt-gold: #C5A059;
+  --wt-gold-hover: #D2B474;
+  --wt-gold-dark: #7A5C22;
+  --wt-page: #F1F2F3;
+  --wt-surface: #FFFFFF;
+  --wt-muted: #4A4F55;
+  --wt-line: #E3E5E8;
+  --wt-field-line: #8A9099;
+  --wt-table-line: #D5D8DC;
+  --wt-danger: #A32635;
+  --wt-success: #17653A;
 
-  /* Bootstrap 5.3 */
-  --bs-body-bg:            var(--wt-cream);
-  --bs-body-color:         var(--wt-carbon);
-  --bs-body-font-family:   'Plus Jakarta Sans', system-ui, sans-serif;
-  --bs-secondary-color:    var(--wt-muted);
-  --bs-border-color:       var(--wt-line);
-  --bs-border-radius:      2px;
-  --bs-border-radius-sm:   2px;
-  --bs-border-radius-lg:   3px;
-
-  --bs-primary:            #2C221E;
-  --bs-primary-rgb:        44, 34, 30;
-  --bs-link-color:         var(--wt-gold-dark);
-  --bs-link-color-rgb:     138, 107, 47;
-  --bs-link-hover-color:   var(--wt-brown);
+  --bs-body-bg: var(--wt-page);
+  --bs-body-color: var(--wt-carbon);
+  --bs-body-font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  --bs-body-font-size: 15px;
+  --bs-secondary-color: var(--wt-muted);
+  --bs-border-color: var(--wt-line);
+  --bs-border-radius: 8px;
+  --bs-border-radius-sm: 8px;
+  --bs-border-radius-lg: 12px;
+  --bs-primary: #2C221E;
+  --bs-primary-rgb: 44, 34, 30;
+  --bs-link-color: var(--wt-gold-dark);
+  --bs-link-color-rgb: 122, 92, 34;
+  --bs-link-hover-color: var(--wt-brown);
   --bs-link-hover-color-rgb: 44, 34, 30;
-  --bs-focus-ring-color:   rgba(197, 160, 89, .35);
+  --bs-focus-ring-color: rgba(197, 160, 89, .35);
 
-  /* Los estados (success / warning / danger / info) se dejan en los
-     colores estándar de Bootstrap a propósito: son los que se reconocen
-     en stock, estatus de pedido, etc. */
+  /* Los estados success, warning, danger e info conservan Bootstrap. */
 }
 
 body {
   -webkit-font-smoothing: antialiased;
-  background-color: var(--wt-cream);
+  background-color: var(--wt-page);
+  color: var(--wt-carbon);
+  font-size: 15px;
 }
 
-/* Títulos editoriales, igual que la landing */
-h1, h2, h3, .font-serif {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-weight: 600;
-  letter-spacing: .01em;
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.card-title,
+.card-header h2 {
+  color: var(--wt-carbon);
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.card-body > .card-title {
+  display: block;
+  float: none;
+  margin-bottom: .75rem;
 }
 
 /* ---------- Botones ---------- */
+.btn {
+  border-radius: 8px;
+  font-weight: 600;
+}
 .btn-primary {
   --bs-btn-bg: #2C221E;
   --bs-btn-border-color: #2C221E;
@@ -62,8 +80,9 @@ h1, h2, h3, .font-serif {
   --bs-btn-hover-border-color: #181514;
   --bs-btn-active-bg: #181514;
   --bs-btn-active-border-color: #181514;
-  --bs-btn-disabled-bg: #8C827A;
-  --bs-btn-disabled-border-color: #8C827A;
+  --bs-btn-disabled-bg: #EDEEF0;
+  --bs-btn-disabled-border-color: #D5D8DC;
+  --bs-btn-disabled-color: #4A4F55;
   --bs-btn-focus-shadow-rgb: 197, 160, 89;
 }
 .btn-outline-primary {
@@ -73,6 +92,23 @@ h1, h2, h3, .font-serif {
   --bs-btn-hover-border-color: #2C221E;
   --bs-btn-active-bg: #181514;
   --bs-btn-focus-shadow-rgb: 197, 160, 89;
+}
+.btn-outline-danger {
+  --bs-btn-color: #A32635;
+  --bs-btn-border-color: #A32635;
+  --bs-btn-hover-bg: #A32635;
+  --bs-btn-hover-border-color: #A32635;
+  --bs-btn-active-bg: #A32635;
+  --bs-btn-active-border-color: #A32635;
+}
+.btn.disabled,
+.btn:disabled,
+.btn-outline-secondary.disabled,
+.btn-outline-secondary:disabled {
+  color: #4A4F55;
+  background-color: #EDEEF0;
+  border-color: #D5D8DC;
+  opacity: 1;
 }
 /* Botón de acento dorado (acciones destacadas) */
 .btn-accent {
@@ -86,7 +122,7 @@ h1, h2, h3, .font-serif {
   --bs-btn-focus-shadow-rgb: 197, 160, 89;
 }
 
-/* Foco visible, como en la landing */
+/* Foco visible */
 a:focus-visible, button:focus-visible, .btn:focus-visible,
 .form-control:focus, .form-select:focus, .form-check-input:focus {
   outline: 2px solid var(--wt-gold);
@@ -99,65 +135,115 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
   border-color: var(--wt-brown);
 }
 
+/* ---------- Formularios ---------- */
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+.form-control,
+.form-select {
+  color: var(--wt-carbon);
+  border-color: var(--wt-field-line);
+  border-radius: 8px;
+}
+.form-control::placeholder {
+  color: #6B7280;
+  opacity: 1;
+}
+
 /* ---------- Sidebar ---------- */
 .app-sidebar {
-  background-color: var(--wt-carbon) !important;
-  border-right: 1px solid rgba(251, 248, 245, .08);
+  --bs-body-color: #111315;
+  --bs-secondary-color: #4A4F55;
+  --bs-emphasis-color: #111315;
+  --bs-tertiary-color: #4A4F55;
+  --bs-link-color: #2B2F34;
+  background-color: #E1E3E5 !important;
+  border-right: 1px solid #CDD0D4;
+  color: #2B2F34 !important;
 }
 .app-sidebar .sidebar-brand {
-  border-bottom: 1px solid rgba(251, 248, 245, .1);
+  background-color: #E1E3E5 !important;
+  border-bottom: 1px solid #CDD0D4;
+}
+.app-sidebar .brand-link,
+.app-sidebar .brand-text {
+  color: #2C221E !important;
 }
 .app-sidebar .brand-text {
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.5rem;
-  color: var(--wt-cream);
+  font-size: 28px;
+  font-weight: 600;
 }
 .app-sidebar .nav-link {
-  color: rgba(251, 248, 245, .72);
+  color: #2B2F34 !important;
+  font-weight: 500;
+}
+.app-sidebar .nav-link .nav-icon,
+.app-sidebar .nav-link p {
+  color: inherit !important;
 }
 .app-sidebar .nav-link:hover {
-  color: var(--wt-cream);
-  background-color: rgba(251, 248, 245, .07);
+  color: #111315 !important;
+  background-color: rgba(17, 19, 21, .06) !important;
 }
 .app-sidebar .nav-link.active {
-  color: var(--wt-cream) !important;
-  background-color: rgba(197, 160, 89, .16) !important;
-  box-shadow: inset 3px 0 0 var(--wt-gold);
+  color: #111315 !important;
+  background-color: #FFFFFF !important;
+  border-radius: 8px;
+  box-shadow: inset 3px 0 0 #C5A059, 0 1px 2px rgba(17, 19, 21, .08);
+  font-weight: 700;
 }
 .app-sidebar .nav-header {
-  color: var(--wt-gold);
+  color: #4A4F55 !important;
   font-size: .68rem;
+  font-weight: 700;
   letter-spacing: .16em;
   text-transform: uppercase;
 }
 
 /* ---------- Barra superior ---------- */
 .app-header {
-  background-color: var(--wt-cream);
-  border-bottom: 1px solid var(--wt-line);
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E3E5E8;
 }
 
-/* ---------- Tarjetas y tablas (bordes finos, estilo editorial) ---------- */
+/* ---------- Tarjetas y tablas ---------- */
 .card {
-  border: 1px solid var(--wt-line);
-  box-shadow: none;
-  background-color: #fff;
+  background-color: #FFFFFF;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(17, 19, 21, .05), 0 0 0 1px rgba(17, 19, 21, .05);
+}
+.card.border-warning {
+  border-width: 2px;
+  border-style: solid;
 }
 .card-header {
-  background-color: transparent;
-  border-bottom: 1px solid var(--wt-line);
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E3E5E8;
+}
+.table {
+  font-variant-numeric: tabular-nums;
+}
+.table-light {
+  --bs-table-bg: #F5F6F7;
+  --bs-table-color: #2B2F34;
+  --bs-table-border-color: #D5D8DC;
 }
 .table > thead th {
-  font-size: .72rem;
-  letter-spacing: .1em;
+  color: #2B2F34;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
   text-transform: uppercase;
-  color: var(--wt-muted);
-  font-weight: 600;
-  border-bottom-color: var(--wt-line);
+  border-bottom-color: #D5D8DC;
 }
-.table > :not(caption) > * > * { border-bottom-color: var(--wt-line); }
+.table > :not(caption) > * > * {
+  border-bottom-color: #E3E5E8;
+}
 
-/* ---------- Scrollbar sutil (igual que la landing) ---------- */
+/* ---------- Scrollbar sutil ---------- */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--wt-cream); }
+::-webkit-scrollbar-track { background: var(--wt-page); }
 ::-webkit-scrollbar-thumb { background: var(--wt-muted); border-radius: 3px; }

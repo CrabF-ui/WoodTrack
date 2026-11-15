@@ -39,7 +39,7 @@
         </div>
         <div class="col-md-6">
             <label for="q" class="form-label">Buscar</label>
-            <input type="search" name="q" id="q" class="form-control" value="{{ $search }}" placeholder="Cliente, número de pedido o estado">
+            <input type="search" name="q" id="q" class="form-control" value="{{ $search }}" placeholder="Cliente, folio o estado">
         </div>
         <noscript>
             <div class="col-md-auto">
@@ -57,6 +57,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
+                            <th>Folio</th>
                             <th>Cliente</th>
                             <th>Fecha de pedido</th>
                             <th>Fecha de entrega</th>
@@ -69,6 +70,7 @@
                     <tbody>
                         @forelse ($pedidos as $pedido)
                             <tr @class(['table-secondary' => $pedido->trashed()])>
+                                <td>#{{ $pedido->id }}</td>
                                 <td>{{ $pedido->cliente?->nombre ?? '—' }}</td>
                                 <td>{{ $pedido->fecha_pedido?->format('d/m/Y') }}</td>
                                 <td>{{ $pedido->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
@@ -94,7 +96,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center text-muted py-4">No hay pedidos que coincidan con los filtros seleccionados.</td></tr>
+                            <tr><td colspan="8" class="text-center text-muted py-4">No hay pedidos que coincidan con los filtros seleccionados.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

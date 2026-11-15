@@ -3,6 +3,11 @@
         'producto' => $detalle->producto,
         'cantidad' => $detalle->cantidad,
         'precio_unitario' => $detalle->precio_unitario,
+        'alto' => $detalle->alto,
+        'ancho' => $detalle->ancho,
+        'profundidad' => $detalle->profundidad,
+        'material_principal' => $detalle->material_principal,
+        'acabado_color' => $detalle->acabado_color,
     ])->all() : [['producto' => '', 'cantidad' => 1, 'precio_unitario' => '']]);
 
     $herrajesIniciales = old('herrajes', isset($pedido) ? $pedido->herrajes->map(fn ($herraje) => [
@@ -73,50 +78,46 @@
                 </div>
             </div>
 
-            <div class="row g-2 text-muted small fw-semibold mb-2 d-none d-md-flex">
-                <div class="col-md-5">Tipo de mueble / producto</div><div class="col-md-2">Cantidad</div><div class="col-md-3">Precio unitario</div><div class="col-md-2"></div>
-            </div>
             <div id="detalles-container">
                 @foreach ($detallesIniciales as $indice => $detalle)
-                    <div class="row g-2 align-items-end detalle-row mb-2">
-                        <div class="col-md-5">
-                            <label class="form-label d-md-none">Tipo de mueble / producto</label>
-                            <input class="form-control @error("detalles.$indice.producto") is-invalid @enderror" type="text" name="detalles[{{ $indice }}][producto]" value="{{ $detalle['producto'] ?? '' }}" placeholder="Ej. Clóset, cocina, escritorio" required>
-                            @error("detalles.$indice.producto") <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <fieldset class="card mb-3 detalle-row">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3 class="h6 mb-0 titulo-detalle">Mueble {{ $loop->iteration }}@if (!empty($detalle['producto'])) — {{ $detalle['producto'] }}@endif</h3>
+                            <button type="button" class="btn btn-sm btn-outline-danger quitar-detalle">Quitar</button>
                         </div>
-                        <div class="col-md-2">
-                            <label class="form-label d-md-none">Cantidad</label>
-                            <input class="form-control @error("detalles.$indice.cantidad") is-invalid @enderror" type="number" min="1" name="detalles[{{ $indice }}][cantidad]" value="{{ $detalle['cantidad'] ?? 1 }}" required>
-                            @error("detalles.$indice.cantidad") <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <div class="card-body">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-5">
+                                    <label class="form-label">Tipo de mueble / producto</label>
+                                    <input class="form-control @error("detalles.$indice.producto") is-invalid @enderror producto-detalle" type="text" name="detalles[{{ $indice }}][producto]" value="{{ $detalle['producto'] ?? '' }}" placeholder="Ej. Clóset, cocina, escritorio" required>
+                                    @error("detalles.$indice.producto") <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Cantidad</label>
+                                    <input class="form-control cantidad-detalle @error("detalles.$indice.cantidad") is-invalid @enderror" type="number" min="1" name="detalles[{{ $indice }}][cantidad]" value="{{ $detalle['cantidad'] ?? 1 }}" required>
+                                    @error("detalles.$indice.cantidad") <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Precio unitario</label>
+                                    <input class="form-control precio-detalle @error("detalles.$indice.precio_unitario") is-invalid @enderror" type="number" min="0" step="0.01" name="detalles[{{ $indice }}][precio_unitario]" value="{{ $detalle['precio_unitario'] ?? '' }}" placeholder="0.00" required>
+                                    @error("detalles.$indice.precio_unitario") <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                @foreach (['alto' => 'Alto', 'ancho' => 'Ancho', 'profundidad' => 'Profundidad', 'material_principal' => 'Material principal', 'acabado_color' => 'Acabado / color'] as $campo => $etiqueta)
+                                    <div class="col-md-{{ in_array($campo, ['material_principal', 'acabado_color']) ? '6' : '4' }}">
+                                        <label class="form-label">{{ $etiqueta }}</label>
+                                        <input class="form-control @error("detalles.$indice.$campo") is-invalid @enderror" type="text" name="detalles[{{ $indice }}][{{ $campo }}]" value="{{ $detalle[$campo] ?? '' }}" maxlength="255">
+                                        @error("detalles.$indice.$campo") <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label d-md-none">Precio unitario</label>
-                            <input class="form-control @error("detalles.$indice.precio_unitario") is-invalid @enderror" type="number" min="0" step="0.01" name="detalles[{{ $indice }}][precio_unitario]" value="{{ $detalle['precio_unitario'] ?? '' }}" placeholder="0.00" required>
-                            @error("detalles.$indice.precio_unitario") <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-md-2 d-grid">
-                            <button type="button" class="btn btn-outline-danger quitar-detalle">Quitar</button>
-                        </div>
-                    </div>
+                    </fieldset>
                 @endforeach
             </div>
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="agregar-detalle">Agregar mueble/producto</button>
             @error('detalles') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-header"><h2 class="card-title">Especificaciones técnicas y medidas</h2></div>
-        <div class="card-body">
-            <div class="row g-3">
-                @foreach (['alto' => 'Alto', 'ancho' => 'Ancho', 'profundidad' => 'Profundidad', 'material_principal' => 'Material principal', 'acabado_color' => 'Acabado / color'] as $campo => $etiqueta)
-                    <div class="col-md-{{ in_array($campo, ['material_principal', 'acabado_color']) ? '6' : '4' }}">
-                        <label for="{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
-                        <input class="form-control" type="text" id="{{ $campo }}" name="{{ $campo }}" value="{{ old($campo, $pedido->$campo ?? '') }}" maxlength="255">
-                        @error($campo) <div class="text-danger small">{{ $message }}</div> @enderror
-                    </div>
-                @endforeach
-            </div>
         </div>
     </div>
 
@@ -164,9 +165,8 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label for="total" class="form-label">Total</label>
-                    <input class="form-control" type="number" id="total" name="total" value="{{ old('total', $pedido->total ?? '') }}" min="0" step="0.01" required>
-                    @error('total') <div class="text-danger small">{{ $message }}</div> @enderror
+                    <label for="total-calculado" class="form-label">Total</label>
+                    <input class="form-control" type="text" id="total-calculado" value="0.00" readonly>
                 </div>
                 <div class="col-md-4">
                     <label for="forma_pago" class="form-label">Forma de pago</label>
@@ -187,6 +187,10 @@
                     <label for="fecha_anticipo" class="form-label">Fecha del anticipo</label>
                     <input class="form-control" type="date" id="fecha_anticipo" name="fecha_anticipo" value="{{ old('fecha_anticipo', isset($pedido) ? optional($pedido->fecha_anticipo)->format('Y-m-d') : '') }}">
                     @error('fecha_anticipo') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-6">
+                    <label for="saldo-pendiente" class="form-label">Saldo pendiente</label>
+                    <input class="form-control" type="text" id="saldo-pendiente" value="0.00" readonly>
                 </div>
             </div>
         </div>
@@ -213,26 +217,82 @@
 
         const detallesContainer = document.getElementById('detalles-container');
         const herrajesContainer = document.getElementById('herrajes-container');
+        const totalCalculado = document.getElementById('total-calculado');
+        const montoAnticipo = document.getElementById('monto_anticipo');
+        const saldoPendiente = document.getElementById('saldo-pendiente');
         let nextDetalleIndex = {{ empty($detallesIniciales) ? 0 : max(array_map('intval', array_keys($detallesIniciales))) + 1 }};
         let nextHerrajeIndex = {{ empty($herrajesIniciales) ? 0 : max(array_map('intval', array_keys($herrajesIniciales))) + 1 }};
 
+        const actualizarTitulosDetalles = () => {
+            detallesContainer.querySelectorAll('.detalle-row').forEach((detalle, indice) => {
+                const producto = detalle.querySelector('.producto-detalle').value.trim();
+                detalle.querySelector('.titulo-detalle').textContent = `Mueble ${indice + 1}${producto ? ` — ${producto}` : ''}`;
+            });
+        };
+
+        const actualizarSaldoPendiente = () => {
+            const total = Number.parseFloat(totalCalculado.value);
+            const anticipo = Number.parseFloat(montoAnticipo.value);
+            const totalSeguro = Number.isFinite(total) ? total : 0;
+            const anticipoSeguro = Number.isFinite(anticipo) ? anticipo : 0;
+            saldoPendiente.value = Math.max(0, totalSeguro - anticipoSeguro).toFixed(2);
+        };
+
+        const actualizarTotal = () => {
+            const total = Array.from(detallesContainer.querySelectorAll('.detalle-row')).reduce((suma, detalle) => {
+                const cantidad = Number.parseFloat(detalle.querySelector('.cantidad-detalle').value);
+                const precio = Number.parseFloat(detalle.querySelector('.precio-detalle').value);
+                return suma + (Number.isFinite(cantidad) && Number.isFinite(precio) ? cantidad * precio : 0);
+            }, 0);
+            totalCalculado.value = total.toFixed(2);
+            actualizarSaldoPendiente();
+        };
+
         document.getElementById('agregar-detalle').addEventListener('click', () => {
-            const row = document.createElement('div');
-            row.className = 'row g-2 align-items-end detalle-row mb-2';
+            const row = document.createElement('fieldset');
+            row.className = 'card mb-3 detalle-row';
             row.innerHTML = `
-                <div class="col-md-5"><label class="form-label d-md-none">Tipo de mueble / producto</label><input class="form-control" type="text" name="detalles[${nextDetalleIndex}][producto]" placeholder="Ej. Clóset, cocina, escritorio" required></div>
-                <div class="col-md-2"><label class="form-label d-md-none">Cantidad</label><input class="form-control" type="number" min="1" name="detalles[${nextDetalleIndex}][cantidad]" value="1" required></div>
-                <div class="col-md-3"><label class="form-label d-md-none">Precio unitario</label><input class="form-control" type="number" min="0" step="0.01" name="detalles[${nextDetalleIndex}][precio_unitario]" placeholder="0.00" required></div>
-                <div class="col-md-2 d-grid"><button type="button" class="btn btn-outline-danger quitar-detalle">Quitar</button></div>`;
+                <div class="card-header d-flex justify-content-between align-items-center"><h3 class="h6 mb-0 titulo-detalle">Mueble ${detallesContainer.querySelectorAll('.detalle-row').length + 1}</h3><button type="button" class="btn btn-sm btn-outline-danger quitar-detalle">Quitar</button></div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-5"><label class="form-label">Tipo de mueble / producto</label><input class="form-control producto-detalle" type="text" name="detalles[${nextDetalleIndex}][producto]" placeholder="Ej. Clóset, cocina, escritorio" required></div>
+                        <div class="col-md-2"><label class="form-label">Cantidad</label><input class="form-control cantidad-detalle" type="number" min="1" name="detalles[${nextDetalleIndex}][cantidad]" value="1" required></div>
+                        <div class="col-md-3"><label class="form-label">Precio unitario</label><input class="form-control precio-detalle" type="number" min="0" step="0.01" name="detalles[${nextDetalleIndex}][precio_unitario]" placeholder="0.00" required></div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">Alto</label><input class="form-control" type="text" name="detalles[${nextDetalleIndex}][alto]" maxlength="255"></div>
+                        <div class="col-md-4"><label class="form-label">Ancho</label><input class="form-control" type="text" name="detalles[${nextDetalleIndex}][ancho]" maxlength="255"></div>
+                        <div class="col-md-4"><label class="form-label">Profundidad</label><input class="form-control" type="text" name="detalles[${nextDetalleIndex}][profundidad]" maxlength="255"></div>
+                        <div class="col-md-6"><label class="form-label">Material principal</label><input class="form-control" type="text" name="detalles[${nextDetalleIndex}][material_principal]" maxlength="255"></div>
+                        <div class="col-md-6"><label class="form-label">Acabado / color</label><input class="form-control" type="text" name="detalles[${nextDetalleIndex}][acabado_color]" maxlength="255"></div>
+                    </div>
+                </div>`;
             detallesContainer.appendChild(row);
             nextDetalleIndex++;
+            actualizarTitulosDetalles();
+            actualizarTotal();
+        });
+
+        detallesContainer.addEventListener('input', (event) => {
+            if (event.target.classList.contains('producto-detalle')) {
+                actualizarTitulosDetalles();
+            }
+            if (event.target.classList.contains('cantidad-detalle') || event.target.classList.contains('precio-detalle')) {
+                actualizarTotal();
+            }
         });
 
         detallesContainer.addEventListener('click', (event) => {
             if (event.target.classList.contains('quitar-detalle') && detallesContainer.querySelectorAll('.detalle-row').length > 1) {
                 event.target.closest('.detalle-row').remove();
+                actualizarTitulosDetalles();
+                actualizarTotal();
             }
         });
+
+        actualizarTitulosDetalles();
+        actualizarTotal();
+        montoAnticipo.addEventListener('input', actualizarSaldoPendiente);
 
         const actualizarMaterialId = (input) => {
             const row = input.closest('.herraje-row');
@@ -272,7 +332,6 @@
 
         const formaPago = document.getElementById('forma_pago');
         const datosAnticipo = document.getElementById('datos-anticipo');
-        const montoAnticipo = document.getElementById('monto_anticipo');
         const fechaAnticipo = document.getElementById('fecha_anticipo');
 
         const actualizarCamposAnticipo = () => {

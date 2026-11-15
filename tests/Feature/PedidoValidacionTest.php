@@ -25,7 +25,6 @@ class PedidoValidacionTest extends TestCase
                 'estado' => 'El campo estado es obligatorio.',
                 'direccion' => 'El campo dirección es obligatorio.',
                 'detalles' => 'El campo productos del pedido es obligatorio.',
-                'total' => 'El campo total es obligatorio.',
                 'forma_pago' => 'El campo forma de pago es obligatorio.',
             ]);
     }
@@ -142,6 +141,7 @@ class PedidoValidacionTest extends TestCase
         $pedido = Pedido::with('detalles')->firstOrFail();
         $this->assertSame('pendiente', $pedido->estado);
         $this->assertSame('Escritorio', $pedido->detalles->first()->producto);
+        $this->assertSame('100.00', $pedido->total);
     }
 
     private function validOrder(array $overrides = []): array
@@ -158,7 +158,6 @@ class PedidoValidacionTest extends TestCase
                 ['producto' => 'Escritorio', 'cantidad' => 1, 'precio_unitario' => 100],
             ],
             'herrajes' => [],
-            'total' => 100,
             'forma_pago' => 'Liquidado',
             'monto_anticipo' => null,
             'fecha_anticipo' => null,

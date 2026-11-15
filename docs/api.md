@@ -1,0 +1,224 @@
+# API del chofer
+
+## Iniciar sesión
+
+- **Método y ruta:** `POST /api/login`
+- **Autenticación:** pública.
+- **Encabezados:** `Accept: application/json`.
+- **Cuerpo:** `email` y `password` obligatorios; `device_name` opcional (máximo 60 caracteres, predeterminado `app`).
+
+Ejemplo `200 OK`:
+
+```json
+{
+  "token": "1|token-de-ejemplo",
+  "token_type": "Bearer",
+  "expires_at": "2026-12-09T18:00:00.000000Z",
+  "user": { "id": 7, "name": "Chofer Ejemplo", "email": "chofer@example.com" }
+}
+```
+
+El token dura 30 días por defecto. Iniciar sesión de nuevo con el mismo `device_name` reemplaza el token anterior de ese dispositivo.
+
+Errores:
+
+- `401`: Laravel responde cuando falta el token o ya venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
+- `422`: datos inválidos o `{"message":"Las credenciales no son correctas.","errors":{"email":["Las credenciales no son correctas."]}}`.
+- `429`: `{"message":"Demasiados intentos. Intenta de nuevo en un minuto."}` después de cinco intentos por minuto para correo e IP.
+
+## Cerrar sesión
+
+- **Método y ruta:** `POST /api/logout`
+- **Autenticación:** requiere token de Sanctum de un chofer activo.
+- **Encabezados:** enviar siempre `Authorization: Bearer <token>` y `Accept: application/json`.
+- **Cuerpo:** ninguno.
+
+Ejemplo `200 OK`:
+
+```json
+{ "message": "Sesión cerrada correctamente." }
+```
+
+El cierre revoca únicamente el token usado en la petición.
+
+Errores:
+
+- `401`: falta un token válido o venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
+
+## Listar entregas
+
+- **Método y ruta:** `GET /api/entregas`
+- **Autenticación:** enviar siempre token de Sanctum en `Authorization: Bearer <token>` y encabezado `Accept: application/json`.
+- **Parámetros opcionales:** `fecha` con formato `Y-m-d`; `estado` con uno de `pendiente`, `en_camino`, `entregada` o `incidencia`.
+
+La respuesta incluye únicamente entregas asignadas al chofer autenticado cuyo pedido no esté eliminado. Sin filtros devuelve los estados `pendiente` y `en_camino`. Con `fecha` devuelve todos los estados de ese día; con `estado` filtra por ese estado y, si se combinan ambos parámetros, aplica ambos filtros. El orden es fecha asignada ascendente, orden ascendente (los valores nulos al final) e ID ascendente. La lista no se pagina.
+
+Ejemplo `200 OK`:
+
+```json
+{
+  "data": [
+    {
+      "id": 42,
+      "fecha_asignada": "2026-11-08",
+      "orden": 1,
+      "estado": "pendiente",
+      "estado_fecha_hora": "2026-11-08T09:30:00-06:00",
+      "notas": "Llamar al llegar",
+      "pedido": {
+        "id": 18,
+        "cliente": "María Ejemplo",
+        "telefono": "5551234567",
+        "direccion": "Calle de la Madera 123",
+        "fecha_entrega": "2026-11-08",
+        "productos": [
+          { "producto": "Mesa de pino", "cantidad": 1 }
+        ]
+      }
+    }
+  ]
+}
+```
+
+Errores:
+
+- `401`: falta un token válido o venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` si la cuenta está desactivada; `{"message":"Esta cuenta no tiene acceso a la app."}` si el usuario no es chofer.
+- `422`: parámetros inválidos; el cuerpo contiene `message` y `errors` con mensajes en español.
+
+## Cambiar estado de una entrega
+
+- **Método y ruta:** `PATCH /api/entregas/{entrega}/estado`
+- **Autenticación:** requiere token de Sanctum de un chofer activo. Enviar `Authorization: Bearer <token>` y `Accept: application/json`.
+- **Cuerpo:** `estado`, obligatorio; acepta únicamente `pendiente` o `en_camino`.
+
+Ejemplo `200 OK`:
+
+```json
+{
+  "data": {
+    "id": 42,
+    "fecha_asignada": "2026-11-08",
+    "orden": 1,
+    "estado": "en_camino",
+    "estado_fecha_hora": "2026-11-08T09:30:00-06:00",
+    "notas": "Llamar al llegar",
+    "pedido": {
+      "id": 18,
+      "cliente": "María Ejemplo",
+      "telefono": "5551234567",
+      "direccion": "Calle de la Madera 123",
+      "fecha_entrega": "2026-11-08",
+      "productos": [{ "producto": "Mesa de pino", "cantidad": 1 }]
+    }
+  }
+}
+```
+
+Solo permite transiciones entre `pendiente` y `en_camino`. Solicitar el mismo estado es idempotente y no actualiza `estado_fecha_hora`. No hay límite de entregas simultáneas en camino ni restricción por fecha asignada. Una entrega `entregada` o con `incidencia` ya está cerrada y no puede cambiar de estado. La entrega debe pertenecer al chofer autenticado y su pedido debe seguir activo.
+
+Errores:
+
+- `401`: falta un token válido o venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
+- `404`: la entrega no existe, pertenece a otro chofer o su pedido fue eliminado.
+- `422`: `{"message":"El estado es obligatorio.","errors":{"estado":["El estado es obligatorio."]}}`; para un valor distinto de `pendiente` o `en_camino`, el mensaje es `El estado debe ser pendiente o en_camino.`. Las entregas cerradas responden `Esta entrega ya fue cerrada y no puede cambiar de estado.`.
+
+## Registrar incidencia de una entrega
+
+- **Método y ruta:** `POST /api/entregas/{entrega}/incidencia`
+- **Autenticación:** requiere token de Sanctum de un chofer activo. Enviar `Authorization: Bearer <token>` y `Accept: application/json`.
+- **Cuerpo:** `motivo`, texto obligatorio de 10 a 65535 caracteres.
+
+Ejemplo `200 OK`:
+
+```json
+{
+  "data": {
+    "id": 42,
+    "fecha_asignada": "2026-11-08",
+    "orden": 1,
+    "estado": "incidencia",
+    "estado_fecha_hora": "2026-11-08T10:15:00-06:00",
+    "notas": "Llamar al llegar",
+    "pedido": {
+      "id": 18,
+      "cliente": "María Ejemplo",
+      "telefono": "5551234567",
+      "direccion": "Calle de la Madera 123",
+      "fecha_entrega": "2026-11-08",
+      "productos": [{ "producto": "Mesa de pino", "cantidad": 1 }]
+    }
+  }
+}
+```
+
+Se puede registrar una incidencia cuando la entrega está `pendiente` o `en_camino`. La operación guarda el motivo y cambia el estado a `incidencia` de forma atómica. La entrega debe pertenecer al chofer autenticado, su pedido debe seguir activo y no debe tener evidencia previa.
+
+Errores:
+
+- `401`: falta un token válido o venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
+- `404`: la entrega no existe, pertenece a otro chofer o su pedido fue eliminado.
+- `422`: motivo ausente, menor de 10 caracteres o mayor de 65535 caracteres; una entrega cerrada responde `Esta entrega ya fue cerrada y no puede cambiar de estado.`; una entrega activa con evidencia previa responde `Esta entrega ya tiene evidencia registrada.`.
+
+## Registrar la entrega con evidencia
+
+- **Método y ruta:** `POST /api/entregas/{entrega}/entregar`
+- **Autenticación:** requiere token de Sanctum de un chofer activo. Enviar `Authorization: Bearer <token>` y `Accept: application/json`.
+- **Tipo de cuerpo:** `multipart/form-data`.
+
+Campos:
+
+| Campo | Obligatorio | Descripción |
+| --- | --- | --- |
+| `receptor_nombre` | Sí | Nombre del receptor, de 2 a 120 caracteres. |
+| `fotos[]` | Sí | De 1 a 3 fotografías en formato JPG o PNG, máximo 5 MB por archivo. |
+| `firma` | No | Firma en formato JPG o PNG, máximo 5 MB. |
+| `motivo_sin_firma` | Si no hay firma | Texto de al menos 10 caracteres. No se puede enviar junto con `firma`. |
+
+Ejemplo con firma:
+
+```bash
+curl -X POST "https://ejemplo.test/api/entregas/42/entregar" \
+  -H "Authorization: Bearer <token>" \
+  -H "Accept: application/json" \
+  -F "receptor_nombre=María Ejemplo" \
+  -F "fotos[]=@foto-frente.jpg" \
+  -F "fotos[]=@foto-producto.png" \
+  -F "firma=@firma.png"
+```
+
+Ejemplo `200 OK`:
+
+```json
+{
+  "data": {
+    "id": 42,
+    "fecha_asignada": "2026-11-08",
+    "orden": 1,
+    "estado": "entregada",
+    "estado_fecha_hora": "2026-11-08T11:30:00-06:00",
+    "notas": "Llamar al llegar",
+    "pedido": {
+      "id": 18,
+      "cliente": "María Ejemplo",
+      "telefono": "5551234567",
+      "direccion": "Calle de la Madera 123",
+      "fecha_entrega": "2026-11-08",
+      "productos": [{ "producto": "Mesa de pino", "cantidad": 1 }]
+    }
+  }
+}
+```
+
+La entrega debe estar `en_camino`. El estado y la evidencia se registran de forma atómica; si falla la operación, no se conservan cambios ni archivos parciales.
+
+Errores:
+
+- `401`: falta un token válido o venció; la app debe volver al login.
+- `403`: `{"message":"Tu cuenta está desactivada. Contacta a un administrador."}` o `{"message":"Esta cuenta no tiene acceso a la app."}`.
+- `404`: la entrega no existe, pertenece a otro chofer o su pedido fue eliminado.
+- `422`: campos o archivos inválidos, formatos distintos de JPG o PNG, archivos mayores de 5 MB, entrega pendiente (`La entrega debe estar en camino para registrarla como entregada.`), entrega cerrada (`Esta entrega ya fue cerrada y no puede cambiar de estado.`) o evidencia previa (`Esta entrega ya tiene evidencia registrada.`).

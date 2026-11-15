@@ -8,15 +8,13 @@ use App\Services\EvidenciaEntregaService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Carbon;
 
 class EntregaRepository implements EntregaRepositoryInterface
 {
-    public function __construct(private EvidenciaEntregaService $evidencias)
-    {
-    }
+    public function __construct(private EvidenciaEntregaService $evidencias) {}
 
     public function getForChofer(int $choferId, ?string $fecha = null, ?string $estado = null): Collection
     {
@@ -223,6 +221,19 @@ class EntregaRepository implements EntregaRepositoryInterface
         return [
             'entregadas' => $entregas->where('estado', Entrega::ESTADO_ENTREGADA)->count(),
             'pendientes' => $entregas->whereIn('estado', $estadosPendientes)->count(),
+        ];
+    }
+
+    public function contarEntregasUltimos7Dias(): array
+    {
+        $entregas = Entrega::query()
+            ->whereBetween('fecha_asignada', [Carbon::today()->subDays(6), Carbon::today()])
+            ->whereHas('pedido', fn ($query) => $query->whereNull('pedidos.deleted_at'))
+            ->get(['estado']);
+
+        return [
+            'entregadas' => $entregas->where('estado', Entrega::ESTADO_ENTREGADA)->count(),
+            'asignadas' => $entregas->count(),
         ];
     }
 }

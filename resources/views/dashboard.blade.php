@@ -66,6 +66,24 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-6 col-xl-4 mt-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h5">Entregas de la semana</h2>
+                        <p class="display-6 mb-2">{{ $entregasSemana['entregadas'] }} entregadas de {{ $entregasSemana['asignadas'] }} asignadas</p>
+                        <small class="text-muted">Últimos 7 días</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4 mt-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h5">Pedidos registrados</h2>
+                        <p class="display-6 mb-2">${{ number_format($pedidosSemana, 2, '.', ',') }}</p>
+                        <small class="text-muted">Últimos 7 días</small>
+                    </div>
+                </div>
+            </div>
         @endif
 </div>
 @endsection

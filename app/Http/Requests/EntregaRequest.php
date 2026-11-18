@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Entrega;
+use App\Models\Pedido;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,18 +21,9 @@ class EntregaRequest extends FormRequest
             'pedido_id' => [
                 $soloPendientes ? 'sometimes' : 'required',
                 Rule::exists('pedidos', 'id')->whereNull('deleted_at'),
-                function ($attribute, $value, $fail): void {
-                    if (\App\Models\Pedido::whereKey($value)->where('estado', 'cancelado')->exists()) {
-                        $fail('No se puede asignar una entrega a un pedido cancelado.');
-                    }
-                },
-                function ($attribute, $value, $fail): void {
-                    $activa = Entrega::where('pedido_id', $value)
-                        ->whereIn('estado', Entrega::ESTADOS_ACTIVOS)
-                        ->exists();
-
-                    if ($activa) {
-                        $fail('El pedido ya tiene una entrega activa.');
+                function ($attribute, $value, $fail) use ($soloPendientes): void {
+                    if (! $soloPendientes && ! Pedido::find($value)?->estaCompletadoSinEntrega()) {
+                        $fail('Solo se pueden asignar entregas a pedidos completados que no tengan una entrega vigente.');
                     }
                 },
             ],
@@ -47,7 +38,7 @@ class EntregaRequest extends FormRequest
     {
         return [
             'required' => 'El campo :attribute es obligatorio.',
-            'pedido_id.exists' => 'Selecciona un pedido asignable y activo.',
+            'pedido_id.exists' => 'Selecciona un pedido completado y disponible.',
             'chofer_id.exists' => 'Selecciona un chofer activo.',
             'fecha_asignada.date' => 'La fecha asignada debe ser una fecha válida.',
             'fecha_asignada.after_or_equal' => 'La fecha asignada no puede ser anterior a hoy.',

@@ -89,9 +89,8 @@ class EntregaController extends Controller
 
     private function formData(): array
     {
-        $pedidos = Pedido::with('cliente')
-            ->where('estado', '!=', 'cancelado')
-            ->whereDoesntHave('entregas', fn ($query) => $query->whereIn('estado', Entrega::ESTADOS_ACTIVOS))
+        $pedidos = Pedido::completadosSinEntrega()
+            ->with('cliente')
             ->orderByDesc('fecha_pedido')
             ->get();
         $choferes = User::where('rol', 'chofer')->where('activo', true)->orderBy('name')->get();

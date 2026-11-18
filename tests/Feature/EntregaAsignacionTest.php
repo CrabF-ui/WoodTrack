@@ -23,10 +23,35 @@ class EntregaAsignacionTest extends TestCase
             ->assertRedirect(route('entregas.index'))->assertSessionHas('success');
 
         $this->assertDatabaseHas('entregas', ['pedido_id' => $pedido->id, 'chofer_id' => $chofer->id, 'estado' => 'pendiente']);
-        $this->assertSame('pendiente', $pedido->fresh()->estado);
+        $this->assertSame('completado', $pedido->fresh()->estado);
     }
 
-    public function test_rechaza_pedidos_cancelados_eliminados_y_con_entrega_activa(): void
+    public function test_formulario_de_creacion_no_lista_pedidos_pendientes_ni_en_proceso(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $pendiente = $this->pedido('pendiente');
+        $enProceso = $this->pedido('en_proceso');
+        $completado = $this->pedido();
+
+        $response = $this->get(route('entregas.create'))->assertOk();
+        $selectPedido = $this->selectPedido($response->getContent());
+
+        $this->assertStringNotContainsString('value="'.$pendiente->id.'"', $selectPedido);
+        $this->assertStringNotContainsString('value="'.$enProceso->id.'"', $selectPedido);
+        $this->assertStringContainsString('value="'.$completado->id.'"', $selectPedido);
+    }
+
+    public function test_rechaza_pedido_pendiente_sin_crear_entrega(): void
+    {
+        $this->assertPedidoNoAsignable('pendiente');
+    }
+
+    public function test_rechaza_pedido_en_proceso_sin_crear_entrega(): void
+    {
+        $this->assertPedidoNoAsignable('en_proceso');
+    }
+
+    public function test_rechaza_pedidos_cancelados_eliminados_y_con_entrega_vigente(): void
     {
         $this->actingAs(User::factory()->create());
         $chofer = User::factory()->create(['rol' => 'chofer']);
@@ -42,15 +67,31 @@ class EntregaAsignacionTest extends TestCase
         $this->post(route('entregas.store'), $this->datos($ocupado, $chofer))->assertSessionHasErrors('pedido_id');
     }
 
-    public function test_permite_reentrega_despues_de_entregada_o_incidencia(): void
+    public function test_permite_asignar_pedido_completado_despues_de_incidencia(): void
     {
         $this->actingAs(User::factory()->create());
         $chofer = User::factory()->create(['rol' => 'chofer']);
-        foreach ([Entrega::ESTADO_ENTREGADA, Entrega::ESTADO_INCIDENCIA] as $estado) {
-            $pedido = $this->pedido();
-            $this->crearEntrega($pedido, $chofer, $estado);
-            $this->post(route('entregas.store'), $this->datos($pedido, $chofer))->assertSessionHasNoErrors();
-        }
+        $pedido = $this->pedido();
+        $this->crearEntrega($pedido, $chofer, Entrega::ESTADO_INCIDENCIA);
+
+        $this->post(route('entregas.store'), $this->datos($pedido, $chofer))
+            ->assertRedirect(route('entregas.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseCount('entregas', 2);
+    }
+
+    public function test_rechaza_pedido_con_entrega_entregada(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $chofer = User::factory()->create(['rol' => 'chofer']);
+        $pedido = $this->pedido();
+        $this->crearEntrega($pedido, $chofer, Entrega::ESTADO_ENTREGADA);
+
+        $this->post(route('entregas.store'), $this->datos($pedido, $chofer))
+            ->assertSessionHasErrors(['pedido_id' => 'Solo se pueden asignar entregas a pedidos completados que no tengan una entrega vigente.']);
+
+        $this->assertDatabaseCount('entregas', 1);
     }
 
     public function test_rechaza_usuario_que_no_es_chofer(): void
@@ -144,6 +185,10 @@ class EntregaAsignacionTest extends TestCase
         $pendiente = $this->crearEntrega($pedido, $chofer);
         $otroChofer = User::factory()->create(['rol' => 'chofer']);
 
+        $this->get(route('entregas.edit', $pendiente))
+            ->assertOk()
+            ->assertSee('Pedido #'.$pedido->id);
+
         $this->put(route('entregas.update', $pendiente), [
             'pedido_id' => $this->pedido()->id,
             'chofer_id' => $otroChofer->id,
@@ -151,7 +196,7 @@ class EntregaAsignacionTest extends TestCase
             'orden' => 2,
         ])->assertRedirect(route('entregas.index'))->assertSessionHasNoErrors();
         $this->assertSame($pedido->id, $pendiente->fresh()->pedido_id);
-        $this->assertSame('pendiente', $pedido->fresh()->estado);
+        $this->assertSame('completado', $pedido->fresh()->estado);
 
         $pendiente->cambiarEstado(Entrega::ESTADO_EN_CAMINO);
         $this->get(route('entregas.edit', $pendiente))->assertRedirect(route('entregas.index'))->assertSessionHas('error');
@@ -162,7 +207,7 @@ class EntregaAsignacionTest extends TestCase
         ])->assertRedirect(route('entregas.index'))->assertSessionHas('error');
     }
 
-    private function pedido(string $estado = 'pendiente'): Pedido
+    private function pedido(string $estado = 'completado'): Pedido
     {
         return $this->pedidoConDireccion('Calle de prueba 10', $estado);
     }
@@ -193,5 +238,25 @@ class EntregaAsignacionTest extends TestCase
             'fecha_asignada' => $fecha ?? now()->toDateString(),
             'estado' => $estado,
         ]);
+    }
+
+    private function assertPedidoNoAsignable(string $estado): void
+    {
+        $this->actingAs(User::factory()->create());
+        $pedido = $this->pedido($estado);
+        $chofer = User::factory()->create(['rol' => 'chofer']);
+
+        $this->post(route('entregas.store'), $this->datos($pedido, $chofer))
+            ->assertSessionHasErrors(['pedido_id' => 'Solo se pueden asignar entregas a pedidos completados que no tengan una entrega vigente.']);
+
+        $this->assertDatabaseMissing('entregas', ['pedido_id' => $pedido->id]);
+    }
+
+    private function selectPedido(string $content): string
+    {
+        preg_match('/<select name="pedido_id".*?<\/select>/s', $content, $coincidencia);
+        $this->assertNotEmpty($coincidencia, 'No se encontró el selector de pedido.');
+
+        return $coincidencia[0];
     }
 }

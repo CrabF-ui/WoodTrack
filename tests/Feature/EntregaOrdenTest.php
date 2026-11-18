@@ -134,7 +134,7 @@ class EntregaOrdenTest extends TestCase
     {
         $cliente = Cliente::create(['nombre' => 'Cliente de prueba', 'telefono' => null]);
 
-        return Pedido::create(['cliente_id' => $cliente->id, 'fecha_pedido' => now()->toDateString(), 'estado' => 'pendiente', 'total' => 100, 'direccion' => 'Calle de prueba']);
+        return Pedido::create(['cliente_id' => $cliente->id, 'fecha_pedido' => now()->toDateString(), 'estado' => 'completado', 'total' => 100, 'direccion' => 'Calle de prueba']);
     }
 
     private function datos(Pedido $pedido, User $chofer, ?int $orden): array

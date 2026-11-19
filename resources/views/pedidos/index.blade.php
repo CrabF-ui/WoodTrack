@@ -70,7 +70,7 @@
                     <tbody>
                         @forelse ($pedidos as $pedido)
                             <tr @class(['table-secondary' => $pedido->trashed()])>
-                                <td>#{{ $pedido->id }}</td>
+                                <td class="text-nowrap">#{{ $pedido->id }}</td>
                                 <td>{{ $pedido->cliente?->nombre ?? '—' }}</td>
                                 <td>{{ $pedido->fecha_pedido?->format('d/m/Y') }}</td>
                                 <td>{{ $pedido->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
@@ -78,21 +78,28 @@
                                     @if ($pedido->trashed())
                                         <span class="badge text-bg-secondary">Eliminado</span>
                                     @else
-                                        <span class="badge {{ $pedido->estado_badge_class }}">{{ $pedido->estado_label }}</span>
+                                        <div class="d-flex flex-column align-items-start gap-1">
+                                            <span class="badge {{ $pedido->estado_badge_class }}">{{ $pedido->estado_label }}</span>
+                                            @if ($pedido->estaCompletadoSinEntrega() && $pedido->tieneIncidenciaPrevia())
+                                                <span class="badge text-bg-danger d-block mt-1">Incidencia previa</span>
+                                            @endif
+                                        </div>
                                     @endif
                                 </td>
                                 <td>{{ $pedido->deleted_at?->format('d/m/Y H:i') ?? '—' }}</td>
                                 <td class="text-end">${{ number_format((float) $pedido->total, 2) }}</td>
-                                <td class="text-end text-nowrap">
-                                    @if ($pedido->trashed())
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
-                                    @else
-                                        <a href="{{ route('pedidos.edit', $pedido->id) }}" class="btn btn-sm btn-outline-primary">Ver / editar</a>
-                                        @if ($pedido->estaCompletadoSinEntrega())
-                                            <a href="{{ route('entregas.create', ['pedido_id' => $pedido->id]) }}" class="btn btn-sm btn-outline-primary">Asignar entrega</a>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                        @if ($pedido->trashed())
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
+                                        @else
+                                            <a href="{{ route('pedidos.edit', $pedido->id) }}" class="btn btn-sm btn-outline-primary">Ver / editar</a>
+                                            @if ($pedido->estaCompletadoSinEntrega())
+                                                <a href="{{ route('entregas.create', ['pedido_id' => $pedido->id]) }}" class="btn btn-sm btn-outline-primary">{{ $pedido->tieneIncidenciaPrevia() ? 'Reasignar' : 'Asignar entrega' }}</a>
+                                            @endif
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.destroy', ['pedido' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null]) }}" data-action-method="DELETE" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Eliminar">Eliminar</button>
                                         @endif
-                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.destroy', ['pedido' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null]) }}" data-action-method="DELETE" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Eliminar">Eliminar</button>
-                                    @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty

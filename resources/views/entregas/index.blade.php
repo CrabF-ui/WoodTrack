@@ -33,30 +33,42 @@
         <div class="card-header"><h2 class="card-title">Listado de entregas</h2></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Pedido</th><th>Cliente</th><th>Dirección</th><th>Chofer</th><th>Fecha asignada</th><th>Orden</th><th>Estado</th><th></th></tr></thead>
+                <thead class="table-light"><tr><th>Pedido</th><th>Cliente</th><th>Dirección</th><th>Chofer</th><th>Fecha asignada</th><th>Orden</th><th>Intento</th><th>Estado</th><th></th></tr></thead>
                 <tbody>
                     @forelse ($entregas as $entrega)
-                        <tr>
+                        <tr @class(['table-danger' => $entrega->estado === \App\Models\Entrega::ESTADO_INCIDENCIA])>
                             <td>#{{ $entrega->pedido_id }}</td>
                             <td>{{ $entrega->pedido->cliente->nombre ?? '—' }}</td>
                             <td>{{ $entrega->pedido->direccion ?: '—' }}</td>
                             <td>{{ $entrega->chofer->name }}</td>
                             <td>{{ $entrega->fecha_asignada->format('d/m/Y') }}</td>
                             <td>{{ $entrega->orden ?? '—' }}</td>
-                            <td><span class="badge {{ $entrega->estado === 'pendiente' ? 'text-bg-warning' : ($entrega->estado === 'en_camino' ? 'text-bg-info' : ($entrega->estado === 'entregada' ? 'text-bg-success' : 'text-bg-danger')) }}">{{ Str::headline($entrega->estado) }}</span></td>
+                            <td>{{ $entrega->numero_intento }}</td>
                             <td>
-                                <div class="d-flex gap-2">
+                                <span class="badge {{ $entrega->estado === 'pendiente' ? 'text-bg-warning' : ($entrega->estado === 'en_camino' ? 'text-bg-info' : ($entrega->estado === 'entregada' ? 'text-bg-success' : 'text-bg-danger')) }}">{{ Str::headline($entrega->estado) }}</span>
+                                @if ($entrega->estado === \App\Models\Entrega::ESTADO_INCIDENCIA)
+                                    <div class="small fw-semibold text-danger mt-1">Requiere acción</div>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
                                     @if ($entrega->estado === \App\Models\Entrega::ESTADO_PENDIENTE)
                                         <a href="{{ route('entregas.edit', $entrega) }}" class="btn btn-sm btn-outline-primary">Editar</a>
                                     @endif
                                     @if (in_array($entrega->estado, [\App\Models\Entrega::ESTADO_ENTREGADA, \App\Models\Entrega::ESTADO_INCIDENCIA], true))
                                         <a href="{{ route('entregas.evidencia', $entrega) }}" class="btn btn-sm btn-outline-secondary">Ver evidencia</a>
                                     @endif
+                                    @if ($entrega->estado === \App\Models\Entrega::ESTADO_INCIDENCIA)
+                                        <a href="{{ route('entregas.create', ['pedido_id' => $entrega->pedido_id]) }}" class="btn btn-sm btn-danger">Reasignar entrega</a>
+                                    @endif
+                                    @if ($entrega->total_intentos > 1)
+                                        <a href="{{ route('entregas.intentos', array_filter(['pedido' => $entrega->pedido_id, 'chofer_id' => $filtros['chofer_id'] ?? null, 'fecha' => $filtros['fecha'] ?? null])) }}" class="btn btn-sm btn-outline-secondary">Ver intentos ({{ $entrega->total_intentos }})</a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="text-center text-muted py-4">No hay entregas para mostrar.</td></tr>
+                        <tr><td colspan="9" class="text-center text-muted py-4">No hay entregas para mostrar.</td></tr>
                     @endforelse
                 </tbody>
             </table>

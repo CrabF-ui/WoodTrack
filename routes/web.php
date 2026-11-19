@@ -30,6 +30,7 @@ Route::middleware(['auth', 'rol:'.User::ROL_ADMIN])->group(function () {
     Route::get('entregas/{entrega}/evidencia', [EntregaEvidenciaController::class, 'show'])->whereNumber('entrega')->name('entregas.evidencia');
     Route::get('entregas/{entrega}/evidencia/firma', [EntregaEvidenciaController::class, 'firma'])->whereNumber('entrega')->name('entregas.evidencia.firma');
     Route::get('entregas/{entrega}/evidencia/fotos/{foto}', [EntregaEvidenciaController::class, 'foto'])->whereNumber('entrega')->whereNumber('foto')->name('entregas.evidencia.foto');
+    Route::get('entregas/pedido/{pedido}/intentos', [EntregaController::class, 'intentos'])->whereNumber('pedido')->name('entregas.intentos');
     Route::resource('entregas', EntregaController::class)->except(['show', 'destroy']);
     Route::post('clientes/{id}/restore', [ClienteController::class, 'restore'])->name('clientes.restore');
     Route::resource('clientes', ClienteController::class)->except(['show']);

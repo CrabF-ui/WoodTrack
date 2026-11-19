@@ -11,6 +11,10 @@ interface EntregaRepositoryInterface
 {
     public function getFiltered(?int $choferId = null, ?string $fecha = null): LengthAwarePaginator;
 
+    public function getUnaPorPedido(?int $choferId = null, ?string $fecha = null): LengthAwarePaginator;
+
+    public function getIntentosDePedido(int $pedidoId): Collection;
+
     public function getForChofer(int $choferId, ?string $fecha = null, ?string $estado = null): Collection;
 
     public function cambiarEstadoDeChofer(int $choferId, int $entregaId, string $estado): Entrega;

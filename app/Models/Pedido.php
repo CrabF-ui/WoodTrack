@@ -45,6 +45,20 @@ class Pedido extends Model
         return ! $this->entregas()->whereIn('estado', $estadosConEntrega)->exists();
     }
 
+    public function ultimoIntento(): ?Entrega
+    {
+        if ($this->relationLoaded('entregas')) {
+            return $this->entregas->sortByDesc('id')->first();
+        }
+
+        return $this->entregas()->latest('id')->first();
+    }
+
+    public function tieneIncidenciaPrevia(): bool
+    {
+        return $this->ultimoIntento()?->estado === Entrega::ESTADO_INCIDENCIA;
+    }
+
     protected $fillable = ['cliente_id', 'fecha_pedido', 'fecha_entrega', 'estado', 'total', 'direccion', 'alto', 'ancho', 'profundidad', 'material_principal', 'acabado_color', 'forma_pago', 'monto_anticipo', 'fecha_anticipo'];
 
     protected $casts = [

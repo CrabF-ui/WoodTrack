@@ -8,6 +8,7 @@ use App\Models\EntregaFoto;
 use App\Models\Pedido;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -106,17 +107,37 @@ class EntregaEvidenciaWebTest extends TestCase
             'entrega_id' => $entrega->id,
             'ruta' => 'entregas/1/fotos/foto.png',
         ]);
-        Storage::disk('evidencias')->put($entrega->firma_path, $this->png());
+        Storage::disk('evidencias')->put($entrega->firma_path, Crypt::encryptString($this->png()));
         Storage::disk('evidencias')->put($foto->ruta, $this->png());
 
-        foreach ([route('entregas.evidencia.firma', $entrega), route('entregas.evidencia.foto', [$entrega, $foto])] as $url) {
-            $this->get($url)
-                ->assertOk()
-                ->assertHeader('Content-Type', 'image/png')
-                ->assertHeader('Cache-Control', 'private')
-                ->assertHeader('X-Content-Type-Options', 'nosniff')
-                ->assertStreamedContent($this->png());
-        }
+        $this->get(route('entregas.evidencia.firma', $entrega))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png')
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertContent($this->png());
+
+        $this->get(route('entregas.evidencia.foto', [$entrega, $foto]))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png')
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertStreamedContent($this->png());
+    }
+
+    public function test_administrador_descarga_firma_antigua_sin_cifrar(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $entrega = $this->crearEntrega(Entrega::ESTADO_ENTREGADA, [
+            'firma_path' => 'entregas/1/firma/firma-antigua.png',
+        ]);
+        Storage::disk('evidencias')->put($entrega->firma_path, $this->png());
+
+        $this->get(route('entregas.evidencia.firma', $entrega))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png')
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertContent($this->png());
     }
 
     public function test_rechaza_foto_de_otra_entrega_y_firma_inexistente(): void

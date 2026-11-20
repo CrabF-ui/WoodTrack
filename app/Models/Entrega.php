@@ -46,6 +46,7 @@ class Entrega extends Model
     protected $casts = [
         'fecha_asignada' => 'date',
         'estado_fecha_hora' => 'datetime',
+        'receptor_nombre' => 'encrypted',
         'orden' => 'integer',
         'sin_firma' => 'boolean',
         'regresa_a_stock' => 'boolean',

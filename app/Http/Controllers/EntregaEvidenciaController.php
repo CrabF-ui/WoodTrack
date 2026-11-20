@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\EntregaRepositoryInterface;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -21,12 +24,33 @@ class EntregaEvidenciaController extends Controller
         ]);
     }
 
-    public function firma(int $entrega): StreamedResponse
+    public function firma(int $entrega): Response
     {
         $model = $this->entregas->findWithEvidencia($entrega);
         abort_if(blank($model->firma_path), 404);
 
-        return $this->respuestaImagen($model->firma_path);
+        /** @var FilesystemAdapter $disco */
+        $disco = Storage::disk('evidencias');
+        abort_unless($disco->exists($model->firma_path), 404);
+        $contenido = $disco->get($model->firma_path);
+
+        try {
+            $contenido = Crypt::decryptString($contenido);
+        } catch (DecryptException) {
+            // Compatibilidad con firmas guardadas antes de habilitar el cifrado.
+        }
+
+        $tipo = (new \finfo(FILEINFO_MIME_TYPE))->buffer($contenido);
+        if (! in_array($tipo, ['image/png', 'image/jpeg'], true)) {
+            $tipo = 'application/octet-stream';
+        }
+
+        return response($contenido, 200, [
+            'Content-Type' => $tipo,
+            'Content-Disposition' => 'inline; filename="'.basename($model->firma_path).'"',
+            'Cache-Control' => 'no-store, private',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function foto(int $entrega, int $foto): StreamedResponse
@@ -45,7 +69,7 @@ class EntregaEvidenciaController extends Controller
 
         return $disco->response($ruta, null, [
             'Content-Type' => $disco->mimeType($ruta),
-            'Cache-Control' => 'private',
+            'Cache-Control' => 'no-store, private',
             'X-Content-Type-Options' => 'nosniff',
         ], 'inline');
     }

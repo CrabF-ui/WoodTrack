@@ -56,6 +56,7 @@ Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENT
 
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENTARIO])->group(function () {
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/lista-compras', [ReporteController::class, 'listaCompras'])->name('reportes.lista-compras');
 });
 
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN])->group(function () {

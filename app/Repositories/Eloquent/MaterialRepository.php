@@ -23,6 +23,14 @@ class MaterialRepository implements MaterialRepositoryInterface
         return Material::where('tipo', $tipo)->orderBy('nombre')->get();
     }
 
+    public function getBajoStock(): Collection
+    {
+        return Material::bajoStock()
+            ->orderByRaw("CASE tipo WHEN 'madera' THEN 1 WHEN 'herraje' THEN 2 WHEN 'acabado' THEN 3 END")
+            ->orderBy('nombre')
+            ->get();
+    }
+
     public function create(array $data): Material
     {
         return Material::create($data);

@@ -6,7 +6,10 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="{{ route('inventario.index') }}" class="btn btn-outline-primary">Volver al inventario</a>
-        <a href="{{ route('inventario.materiales.create') }}" class="btn btn-primary">Nuevo material</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('reportes.lista-compras') }}" class="btn btn-outline-primary" target="_blank" rel="noopener">Lista de compras PDF</a>
+            <a href="{{ route('inventario.materiales.create') }}" class="btn btn-primary">Nuevo material</a>
+        </div>
     </div>
 
     <form method="GET" action="{{ route('inventario.materiales.index') }}" class="row g-2 align-items-end mb-3">

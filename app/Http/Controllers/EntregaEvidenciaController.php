@@ -3,19 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\EntregaRepositoryInterface;
-use Illuminate\Contracts\Encryption\DecryptException;
+use App\Services\EvidenciaEntregaService;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EntregaEvidenciaController extends Controller
 {
-    public function __construct(private EntregaRepositoryInterface $entregas)
-    {
-    }
+    public function __construct(
+        private EntregaRepositoryInterface $entregas,
+        private EvidenciaEntregaService $evidencias,
+    ) {}
 
     public function show(int $entrega): View
     {
@@ -29,16 +29,8 @@ class EntregaEvidenciaController extends Controller
         $model = $this->entregas->findWithEvidencia($entrega);
         abort_if(blank($model->firma_path), 404);
 
-        /** @var FilesystemAdapter $disco */
-        $disco = Storage::disk('evidencias');
-        abort_unless($disco->exists($model->firma_path), 404);
-        $contenido = $disco->get($model->firma_path);
-
-        try {
-            $contenido = Crypt::decryptString($contenido);
-        } catch (DecryptException) {
-            // Compatibilidad con firmas guardadas antes de habilitar el cifrado.
-        }
+        $contenido = $this->evidencias->contenidoFirma($model->firma_path);
+        abort_if($contenido === null, 404);
 
         $tipo = (new \finfo(FILEINFO_MIME_TYPE))->buffer($contenido);
         if (! in_array($tipo, ['image/png', 'image/jpeg'], true)) {

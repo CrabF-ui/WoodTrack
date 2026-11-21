@@ -19,6 +19,7 @@ class ReportesTest extends TestCase
             ->assertOk()
             ->assertSee('Lista de compras')
             ->assertSee('Nota de pedido')
+            ->assertSee('Comprobante de entrega')
             ->assertDontSee('Aún no hay reportes disponibles.')
             ->assertSee('Probar el diseño base del PDF');
         $this->actingAs(User::factory()->encargadoInventario()->create())->get(route('reportes.index'))
@@ -26,6 +27,7 @@ class ReportesTest extends TestCase
             ->assertSee('Lista de compras')
             ->assertDontSee('Aún no hay reportes disponibles.')
             ->assertDontSee('Nota de pedido')
+            ->assertDontSee('Comprobante de entrega')
             ->assertDontSee('Probar el diseño base del PDF');
         $this->actingAs(User::factory()->chofer()->create())->get(route('reportes.index'))->assertForbidden();
 

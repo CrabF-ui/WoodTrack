@@ -15,6 +15,7 @@
             @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
                 <ul>
                     <li>Nota de pedido: se genera desde el listado de <a href="{{ route('pedidos.index') }}">Pedidos</a> (botón «Nota PDF»).</li>
+                    <li>Comprobante de entrega: se genera desde el listado de <a href="{{ route('entregas.index') }}">Entregas</a> cuando la entrega tiene evidencia completa.</li>
                 </ul>
                 <a href="{{ route('reportes.prueba') }}" class="btn btn-outline-primary">Probar el diseño base del PDF</a>
             @endif

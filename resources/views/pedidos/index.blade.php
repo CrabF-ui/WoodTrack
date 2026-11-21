@@ -16,9 +16,19 @@
         </div>
     @endif
 
+    @if ($sinHerrajes)
+        <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
+            <span>Mostrando solo pedidos completados sin herrajes.</span>
+            <a href="{{ route('pedidos.index', request()->except('sin_herrajes')) }}" class="alert-link">Quitar filtro</a>
+        </div>
+    @endif
+
     <form method="GET" action="{{ route('pedidos.index') }}" class="row g-2 align-items-end mb-3" id="filtros-pedidos">
         @if ($sinEntrega)
             <input type="hidden" name="sin_entrega" value="1">
+        @endif
+        @if ($sinHerrajes)
+            <input type="hidden" name="sin_herrajes" value="1">
         @endif
         <div class="col-md-3">
             <label for="estado" class="form-label">Mostrar</label>
@@ -83,6 +93,9 @@
                                             @if ($pedido->estaCompletadoSinEntrega() && $pedido->tieneIncidenciaPrevia())
                                                 <span class="badge text-bg-danger d-block mt-1">Incidencia previa</span>
                                             @endif
+                                            @if ($pedido->estado === 'completado' && $pedido->herrajes_count === 0)
+                                                <span class="badge text-bg-warning d-block mt-1">Sin herrajes</span>
+                                            @endif
                                         </div>
                                     @endif
                                 </td>
@@ -91,13 +104,13 @@
                                 <td>
                                     <div class="d-flex flex-wrap gap-2 justify-content-end">
                                         @if ($pedido->trashed())
-                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null, 'sin_herrajes' => $sinHerrajes ? 1 : null]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
                                         @else
                                             <a href="{{ route('pedidos.edit', $pedido->id) }}" class="btn btn-sm btn-outline-primary">Ver / editar</a>
                                             @if ($pedido->estaCompletadoSinEntrega())
                                                 <a href="{{ route('entregas.create', ['pedido_id' => $pedido->id]) }}" class="btn btn-sm btn-outline-primary">{{ $pedido->tieneIncidenciaPrevia() ? 'Reasignar' : 'Asignar entrega' }}</a>
                                             @endif
-                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.destroy', ['pedido' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null]) }}" data-action-method="DELETE" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Eliminar">Eliminar</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.destroy', ['pedido' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null, 'sin_herrajes' => $sinHerrajes ? 1 : null]) }}" data-action-method="DELETE" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Eliminar">Eliminar</button>
                                         @endif
                                     </div>
                                 </td>
@@ -145,6 +158,7 @@
         const statusSelect = document.getElementById('estatus');
         const searchInput = document.getElementById('q');
         const sinEntregaInput = filterForm.querySelector('input[name="sin_entrega"]');
+        const sinHerrajesInput = filterForm.querySelector('input[name="sin_herrajes"]');
         const listing = document.getElementById('listado-pedidos');
         const confirmationForm = document.getElementById('confirmarAccionFormulario');
         const confirmationMethod = document.getElementById('confirmarAccionMetodo');
@@ -155,6 +169,9 @@
             const url = new URL(filterForm.action, window.location.origin);
             if (sinEntregaInput?.value) {
                 url.searchParams.set('sin_entrega', sinEntregaInput.value);
+            }
+            if (sinHerrajesInput?.value) {
+                url.searchParams.set('sin_herrajes', sinHerrajesInput.value);
             }
             url.searchParams.set('estado', stateSelect.value);
             if (statusSelect.value) {

@@ -22,3 +22,9 @@ En pedidos con anticipo, el saldo se calcula como el total menos el monto del an
 La lista de compras puede ser generada por administradores y encargados de inventario. Incluye únicamente materiales activos cuyo stock actual es menor o igual al stock mínimo, agrupados por tipo y ordenados por nombre.
 
 El faltante se calcula como el stock mínimo menos el stock actual, sin permitir resultados negativos. La cantidad a comprar se deja en blanco para llenarla a mano en el reporte impreso.
+
+## Comprobante de entrega
+
+El comprobante de entrega solo puede generarlo un administrador cuando la entrega está marcada como entregada y cuenta con evidencia completa: receptor, al menos una foto y firma o motivo de ausencia de firma. Incluye los datos de la entrega, cliente, dirección del pedido, chofer, productos y cantidades, receptor, firma y fotografías. No incluye precios, herrajes ni datos de pago.
+
+Se incorporan como máximo tres fotos, ordenadas por registro, redimensionadas a un ancho máximo de 800 píxeles y comprimidas para mantener ligero el PDF. La firma se descifra únicamente en memoria para incorporarla al comprobante; su contenido descifrado no se guarda ni se registra en logs.

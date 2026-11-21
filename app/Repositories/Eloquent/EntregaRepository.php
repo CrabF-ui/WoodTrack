@@ -135,6 +135,7 @@ class EntregaRepository implements EntregaRepositoryInterface
     {
         $entregas = Entrega::query()
             ->with(['pedido.cliente', 'chofer'])
+            ->withCount('fotos')
             ->select('entregas.*')
             ->selectSub(
                 DB::table('entregas as intentos_conteo')
@@ -175,7 +176,7 @@ class EntregaRepository implements EntregaRepositoryInterface
 
     public function findWithEvidencia(int $id): Entrega
     {
-        return Entrega::with(['pedido.cliente', 'chofer', 'fotos'])->findOrFail($id);
+        return Entrega::with(['pedido.cliente', 'pedido.detalles', 'chofer', 'fotos'])->findOrFail($id);
     }
 
     public function create(array $data): array

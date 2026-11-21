@@ -75,6 +75,18 @@ class Entrega extends Model
         return $this->hasMany(EntregaFoto::class);
     }
 
+    public function evidenciaCompleta(): bool
+    {
+        $tieneFotos = array_key_exists('fotos_count', $this->attributes)
+            ? $this->fotos_count > 0
+            : ($this->relationLoaded('fotos') ? $this->fotos->isNotEmpty() : $this->fotos()->exists());
+
+        return $this->estado === self::ESTADO_ENTREGADA
+            && filled($this->receptor_nombre)
+            && $tieneFotos
+            && (filled($this->firma_path) || $this->sin_firma);
+    }
+
     public function cambiarEstado(string $estado): void
     {
         if (! in_array($estado, self::ESTADOS, true)) {

@@ -26,6 +26,7 @@
         <div class="card mb-3">
             <div class="card-header"><h2 class="card-title">Evidencia registrada</h2></div>
             <div class="card-body">
+                <a href="{{ route('entregas.comprobante', $entrega) }}" class="btn btn-primary mb-3" target="_blank" rel="noopener">Comprobante PDF</a>
                 <p><strong>Nombre del receptor:</strong> {{ $entrega->receptor_nombre }}</p>
                 <h3 class="h5">Fotos de la entrega</h3>
                 <div class="row g-3 mb-4">

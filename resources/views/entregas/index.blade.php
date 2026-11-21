@@ -58,6 +58,9 @@
                                     @if (in_array($entrega->estado, [\App\Models\Entrega::ESTADO_ENTREGADA, \App\Models\Entrega::ESTADO_INCIDENCIA], true))
                                         <a href="{{ route('entregas.evidencia', $entrega) }}" class="btn btn-sm btn-outline-secondary">Ver evidencia</a>
                                     @endif
+                                    @if ($entrega->evidenciaCompleta())
+                                        <a href="{{ route('entregas.comprobante', $entrega) }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">Comprobante PDF</a>
+                                    @endif
                                     @if ($entrega->estado === \App\Models\Entrega::ESTADO_INCIDENCIA)
                                         <a href="{{ route('entregas.create', ['pedido_id' => $entrega->pedido_id]) }}" class="btn btn-sm btn-danger">Reasignar entrega</a>
                                     @endif

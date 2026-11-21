@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Entrega;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,75 @@ class EvidenciaEntregaService
     public const MOTIVO_MINIMO = 10;
 
     public const MAXIMO_FOTOS = 3;
+
+    public function contenidoFirma(string $ruta): ?string
+    {
+        $disco = Storage::disk('evidencias');
+        if (! $disco->exists($ruta)) {
+            return null;
+        }
+
+        $contenido = $disco->get($ruta);
+
+        try {
+            return Crypt::decryptString($contenido);
+        } catch (DecryptException) {
+            return $contenido;
+        }
+    }
+
+    public function firmaComoDataUri(string $ruta): ?string
+    {
+        $contenido = $this->contenidoFirma($ruta);
+        if ($contenido === null) {
+            return null;
+        }
+
+        $tipo = (new \finfo(FILEINFO_MIME_TYPE))->buffer($contenido);
+        if (! in_array($tipo, ['image/png', 'image/jpeg'], true)) {
+            return null;
+        }
+
+        return "data:{$tipo};base64,".base64_encode($contenido);
+    }
+
+    /** @return array{dataUri: string, width: int, height: int}|null */
+    public function fotoComoDataUri(string $ruta, int $anchoMaximo = 800, int $calidad = 75): ?array
+    {
+        $disco = Storage::disk('evidencias');
+        if (! $disco->exists($ruta)) {
+            return null;
+        }
+
+        $origen = @imagecreatefromstring($disco->get($ruta));
+        if ($origen === false) {
+            return null;
+        }
+
+        $ancho = imagesx($origen);
+        $alto = imagesy($origen);
+        $anchoDestino = min($ancho, $anchoMaximo);
+        $altoDestino = max(1, (int) round($alto * ($anchoDestino / $ancho)));
+        $destino = imagecreatetruecolor($anchoDestino, $altoDestino);
+        imagefill($destino, 0, 0, imagecolorallocate($destino, 255, 255, 255));
+        imagecopyresampled($destino, $origen, 0, 0, 0, 0, $anchoDestino, $altoDestino, $ancho, $alto);
+
+        ob_start();
+        imagejpeg($destino, null, $calidad);
+        $contenido = ob_get_clean();
+        imagedestroy($origen);
+        imagedestroy($destino);
+
+        if ($contenido === false) {
+            return null;
+        }
+
+        return [
+            'dataUri' => 'data:image/jpeg;base64,'.base64_encode($contenido),
+            'width' => $anchoDestino,
+            'height' => $altoDestino,
+        ];
+    }
 
     public function registrarEntrega(
         Entrega $entrega,

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProblemasEntregasRequest;
 use App\Repositories\Contracts\EntregaRepositoryInterface;
 use App\Repositories\Contracts\MaterialRepositoryInterface;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
 use App\Services\EvidenciaEntregaService;
 use App\Services\ReportePdf;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -22,7 +24,14 @@ class ReporteController extends Controller
 
     public function index(): View
     {
-        return view('reportes.index');
+        $hoy = Carbon::now(config('reportes.zona_horaria'));
+
+        return view('reportes.index', [
+            'periodoPredeterminado' => [
+                'desde' => $hoy->copy()->startOfMonth()->toDateString(),
+                'hasta' => $hoy->copy()->endOfMonth()->toDateString(),
+            ],
+        ]);
     }
 
     public function prueba(): Response
@@ -69,5 +78,30 @@ class ReporteController extends Controller
         $response->headers->set('Cache-Control', 'no-store, private');
 
         return $response;
+    }
+
+    public function problemasEntregas(ProblemasEntregasRequest $request): Response
+    {
+        $periodo = $request->validated();
+        $zonaReportes = config('reportes.zona_horaria');
+        $zonaAplicacion = config('app.timezone');
+        $desde = Carbon::createFromFormat('!Y-m-d', $periodo['desde'], $zonaReportes);
+        $hasta = Carbon::createFromFormat('!Y-m-d', $periodo['hasta'], $zonaReportes)->endOfDay();
+        $incidencias = $this->entregas->getIncidenciasConSituacion(
+            $desde->copy()->setTimezone($zonaAplicacion),
+            $hasta->copy()->setTimezone($zonaAplicacion),
+        );
+        $resumen = [
+            'total' => $incidencias->count(),
+            'sinAtender' => $incidencias->where('situacion', 'Sin atender')->count(),
+            'reasignadas' => $incidencias->where('situacion', 'Reasignada')->count(),
+            'resueltas' => $incidencias->where('situacion', 'Resuelta')->count(),
+        ];
+
+        return $this->reportePdf->generar(
+            'reportes.problemas-entregas',
+            compact('incidencias', 'resumen', 'desde', 'hasta'),
+            'problemas-entregas.pdf',
+        );
     }
 }

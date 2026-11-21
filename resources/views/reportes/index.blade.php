@@ -14,6 +14,19 @@
             </div>
             @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
                 <div class="border-top pt-3 mb-3">
+                    <h3 class="h5">Ventas del mes</h3>
+                    <form method="GET" action="{{ route('reportes.ventas-mes') }}" class="row g-2 align-items-end" target="_blank">
+                        <div class="col-md-4">
+                            <label for="mes" class="form-label">Mes</label>
+                            <input type="month" name="mes" id="mes" class="form-control @error('mes') is-invalid @enderror" value="{{ old('mes', $mesPredeterminado) }}">
+                            @error('mes')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-8">
+                            <button type="submit" class="btn btn-primary">Generar Ventas del mes PDF</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="border-top pt-3 mb-3">
                     <h3 class="h5">Problemas con entregas</h3>
                     <form method="GET" action="{{ route('reportes.problemas-entregas') }}" class="row g-2 align-items-end" target="_blank">
                         <div class="col-md-4">

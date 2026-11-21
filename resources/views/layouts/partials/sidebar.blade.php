@@ -31,6 +31,11 @@
                         <a href="{{ route('entregas.index') }}" class="nav-link {{ request()->routeIs('entregas.*') ? 'active' : '' }}"><i class="nav-icon bi bi-truck"></i><p>Entregas</p></a>
                     </li>
                 @endif
+                @if (in_array(auth()->user()->rol, [\App\Models\User::ROL_ADMIN, \App\Models\User::ROL_ENCARGADO_INVENTARIO], true))
+                    <li class="nav-item">
+                        <a href="{{ route('reportes.index') }}" class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}"><i class="nav-icon bi bi-file-earmark-pdf"></i><p>Reportes</p></a>
+                    </li>
+                @endif
                 @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
                     <li class="nav-item">
                         <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"><i class="nav-icon bi bi-person-gear"></i><p>Usuarios</p></a>

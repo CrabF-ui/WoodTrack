@@ -8,6 +8,7 @@ use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\EntregaEvidenciaController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,14 @@ Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENT
     Route::post('/inventario/movimientos', [MovimientoInventarioController::class, 'store'])->name('inventario.movimientos.store');
     Route::delete('/inventario/movimientos/{id}', [MovimientoInventarioController::class, 'destroy'])->name('inventario.movimientos.destroy');
     Route::post('/inventario/movimientos/{id}/restore', [MovimientoInventarioController::class, 'restore'])->name('inventario.movimientos.restore');
+});
+
+Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENTARIO])->group(function () {
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+});
+
+Route::middleware(['auth', 'rol:'.User::ROL_ADMIN])->group(function () {
+    Route::get('/reportes/prueba', [ReporteController::class, 'prueba'])->name('reportes.prueba');
 });
 
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENTARIO])->group(function () {

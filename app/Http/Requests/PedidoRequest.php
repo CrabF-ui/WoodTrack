@@ -83,7 +83,7 @@ class PedidoRequest extends FormRequest
             'required' => 'El campo :attribute es obligatorio.',
             'required_if' => 'El campo :attribute es obligatorio.',
             'cliente_id.exists' => 'Selecciona un cliente válido y activo.',
-            'fecha_entrega.after_or_equal' => 'La fecha de entrega no puede ser anterior a la fecha del pedido.',
+            'fecha_entrega.after_or_equal' => 'La fecha estimada de entrega no puede ser anterior a la fecha del pedido.',
             'estado.in' => 'Selecciona un estado válido.',
             'detalles.*.producto.max' => 'El producto no puede superar los 255 caracteres.',
             'detalles.*.alto.max' => 'El alto del mueble no puede superar los 255 caracteres.',
@@ -105,7 +105,7 @@ class PedidoRequest extends FormRequest
         return [
             'cliente_id' => 'cliente',
             'fecha_pedido' => 'fecha del pedido',
-            'fecha_entrega' => 'fecha de entrega',
+            'fecha_entrega' => 'fecha estimada de entrega',
             'estado' => 'estado',
             'direccion' => 'dirección',
             'detalles' => 'productos del pedido',

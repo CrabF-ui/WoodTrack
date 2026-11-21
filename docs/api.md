@@ -82,6 +82,8 @@ Ejemplo `200 OK`:
 }
 ```
 
+`fecha_entrega` es la fecha estimada de entrega del pedido; el nombre del campo no cambia.
+
 Errores:
 
 - `401`: falta un token válido o venció; la app debe volver al login.

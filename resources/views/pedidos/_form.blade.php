@@ -72,9 +72,10 @@
                     @error('fecha_pedido') <div class="text-danger small">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4">
-                    <label for="fecha_entrega" class="form-label">Fecha de entrega</label>
+                    <label for="fecha_entrega" class="form-label">Fecha estimada de entrega</label>
                     <input class="form-control" type="date" id="fecha_entrega" name="fecha_entrega" value="{{ old('fecha_entrega', isset($pedido) ? $pedido->fecha_entrega?->format('Y-m-d') : '') }}" required>
                     @error('fecha_entrega') <div class="text-danger small">{{ $message }}</div> @enderror
+                    <div class="form-text">Es una estimación y puede cambiar si se modifican los encargos del pedido. La fecha real de salida se define al asignar la entrega.</div>
                 </div>
             </div>
 

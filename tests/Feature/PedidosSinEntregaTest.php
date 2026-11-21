@@ -149,6 +149,20 @@ class PedidosSinEntregaTest extends TestCase
         $this->assertStringNotContainsString(' selected', $this->selectPedido($invalidResponse->getContent()));
     }
 
+    public function test_opciones_de_entrega_muestran_fecha_estimada_solo_cuando_existe(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $conFecha = $this->crearPedido('Pedido con fecha estimada', 'completado');
+        $conFecha->update(['fecha_entrega' => '2026-12-03']);
+        $this->crearPedido('Pedido sin fecha estimada', 'completado');
+
+        $select = $this->selectPedido($this->get(route('entregas.create'))->assertOk()->getContent());
+
+        $this->assertStringContainsString('Pedido con fecha estimada / Dirección de prueba · entrega estimada 03/12/2026', $select);
+        $this->assertStringContainsString('Pedido sin fecha estimada / Dirección de prueba</option>', $select);
+        $this->assertSame(1, substr_count($select, ' · entrega estimada '));
+    }
+
     private function selectPedido(string $content): string
     {
         preg_match('/<select name="pedido_id".*?<\/select>/s', $content, $coincidencia);

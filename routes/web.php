@@ -27,6 +27,7 @@ Route::middleware(['auth', 'rol:'.User::ROL_ADMIN])->group(function () {
     Route::patch('usuarios/{usuario}/password', [UserController::class, 'resetPassword'])->whereNumber('usuario')->name('usuarios.password');
     Route::get('pedidos-papelera', [PedidoController::class, 'trashed'])->name('pedidos.trashed');
     Route::post('pedidos/{id}/restore', [PedidoController::class, 'restore'])->name('pedidos.restore');
+    Route::get('pedidos/{pedido}/nota', [ReporteController::class, 'notaPedido'])->whereNumber('pedido')->name('pedidos.nota');
     Route::resource('pedidos', PedidoController::class)->except(['show']);
     Route::get('entregas/{entrega}/evidencia', [EntregaEvidenciaController::class, 'show'])->whereNumber('entrega')->name('entregas.evidencia');
     Route::get('entregas/{entrega}/evidencia/firma', [EntregaEvidenciaController::class, 'firma'])->whereNumber('entrega')->name('entregas.evidencia.firma');

@@ -17,9 +17,13 @@ class ReportesTest extends TestCase
     {
         $this->actingAs(User::factory()->create())->get(route('reportes.index'))
             ->assertOk()
+            ->assertSee('Nota de pedido')
+            ->assertDontSee('Aún no hay reportes disponibles.')
             ->assertSee('Probar el diseño base del PDF');
         $this->actingAs(User::factory()->encargadoInventario()->create())->get(route('reportes.index'))
             ->assertOk()
+            ->assertSee('Aún no hay reportes disponibles.')
+            ->assertDontSee('Nota de pedido')
             ->assertDontSee('Probar el diseño base del PDF');
         $this->actingAs(User::factory()->chofer()->create())->get(route('reportes.index'))->assertForbidden();
 

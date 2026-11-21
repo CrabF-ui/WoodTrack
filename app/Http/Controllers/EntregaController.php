@@ -25,7 +25,7 @@ class EntregaController extends Controller
         ]);
 
         return view('entregas.index', [
-            'entregas' => $this->entregas->getFiltered(isset($filters['chofer_id']) ? (int) $filters['chofer_id'] : null, $filters['fecha'] ?? null),
+            'entregas' => $this->entregas->getUnaPorPedido(isset($filters['chofer_id']) ? (int) $filters['chofer_id'] : null, $filters['fecha'] ?? null),
             'choferes' => User::where('rol', 'chofer')->orderBy('name')->get(),
             'filtros' => $filters,
         ]);
@@ -41,8 +41,32 @@ class EntregaController extends Controller
         $data['pedidoPreseleccionado'] = $pedidoId !== false && $data['pedidos']->contains('id', $pedidoId)
             ? $pedidoId
             : null;
+        $data['intentoAnterior'] = $data['pedidoPreseleccionado']
+            ? $data['pedidos']->firstWhere('id', $data['pedidoPreseleccionado'])?->ultimoIntento()
+            : null;
 
         return view('entregas.create', $data);
+    }
+
+    public function intentos(Request $request, int $pedido): View|RedirectResponse
+    {
+        $filters = $request->validate([
+            'chofer_id' => ['nullable', 'integer', 'exists:users,id'],
+            'fecha' => ['nullable', 'date'],
+        ]);
+        $pedidoModel = Pedido::withTrashed()->with('cliente')->findOrFail($pedido);
+        $intentos = $this->entregas->getIntentosDePedido($pedido);
+
+        if ($intentos->isEmpty()) {
+            return redirect()->route('entregas.index', $filters)
+                ->with('error', 'Este pedido no tiene entregas registradas.');
+        }
+
+        return view('entregas.intentos', [
+            'pedido' => $pedidoModel,
+            'intentos' => $intentos,
+            'filtros' => $filters,
+        ]);
     }
 
     public function store(EntregaRequest $request): RedirectResponse
@@ -90,7 +114,7 @@ class EntregaController extends Controller
     private function formData(): array
     {
         $pedidos = Pedido::completadosSinEntrega()
-            ->with('cliente')
+            ->with(['cliente', 'entregas'])
             ->orderByDesc('fecha_pedido')
             ->get();
         $choferes = User::where('rol', 'chofer')->where('activo', true)->orderBy('name')->get();

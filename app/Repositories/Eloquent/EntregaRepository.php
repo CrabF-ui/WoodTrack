@@ -131,6 +131,43 @@ class EntregaRepository implements EntregaRepositoryInterface
             ->withQueryString();
     }
 
+    public function getUnaPorPedido(?int $choferId = null, ?string $fecha = null): LengthAwarePaginator
+    {
+        $entregas = Entrega::query()
+            ->with(['pedido.cliente', 'chofer'])
+            ->select('entregas.*')
+            ->selectSub(
+                DB::table('entregas as intentos_conteo')
+                    ->selectRaw('count(*)')
+                    ->whereColumn('intentos_conteo.pedido_id', 'entregas.pedido_id'),
+                'total_intentos',
+            )
+            ->whereColumn('entregas.id', '=', DB::raw('(select max(intentos.id) from entregas as intentos where intentos.pedido_id = entregas.pedido_id)'))
+            ->when($choferId, fn ($query) => $query->where('chofer_id', $choferId))
+            ->when($fecha, fn ($query) => $query->whereDate('fecha_asignada', $fecha))
+            ->orderBy('fecha_asignada')
+            ->orderByRaw('orden is null')
+            ->orderBy('orden')
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        $entregas->getCollection()->each(
+            fn (Entrega $entrega) => $entrega->setAttribute('numero_intento', $entrega->total_intentos),
+        );
+
+        return $entregas;
+    }
+
+    public function getIntentosDePedido(int $pedidoId): Collection
+    {
+        return Entrega::query()
+            ->with('chofer')
+            ->where('pedido_id', $pedidoId)
+            ->orderByDesc('id')
+            ->get();
+    }
+
     public function findById(int $id): Entrega
     {
         return Entrega::with(['pedido.cliente', 'chofer'])->findOrFail($id);

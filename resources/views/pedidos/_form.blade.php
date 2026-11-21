@@ -127,6 +127,7 @@
             <button type="button" class="btn btn-sm btn-outline-primary" id="agregar-herraje">Agregar herraje</button>
         </div>
         <div class="card-body">
+            <p class="text-muted">Anota los herrajes al completar el pedido. Si no lleva herrajes, confirma abajo.</p>
             <datalist id="herrajes-disponibles">
                 @foreach ($herrajesDisponibles as $material)
                     <option value="{{ $material->nombre }}" data-material-id="{{ $material->id }}"></option>
@@ -157,6 +158,11 @@
                 @endforeach
             </div>
             @error('herrajes') <div class="text-danger small">{{ $message }}</div> @enderror
+            <div class="form-check mt-3">
+                <input class="form-check-input @error('confirmar_sin_herrajes') is-invalid @enderror" type="checkbox" value="1" id="confirmar_sin_herrajes" name="confirmar_sin_herrajes" @checked(old('confirmar_sin_herrajes'))>
+                <label class="form-check-label" for="confirmar_sin_herrajes">Confirmo que este pedido no lleva herrajes</label>
+                @error('confirmar_sin_herrajes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
         </div>
     </div>
 

@@ -99,9 +99,11 @@ class PedidoRepository implements PedidoRepositoryInterface
             ->get();
     }
 
-    public function getFiltered(string $estado, ?string $search = null, ?string $estatus = null, bool $sinEntrega = false): LengthAwarePaginator
+    public function getFiltered(string $estado, ?string $search = null, ?string $estatus = null, bool $sinEntrega = false, bool $sinHerrajes = false): LengthAwarePaginator
     {
-        $query = Pedido::query()->with([...self::RELACIONES, 'entregas:id,pedido_id,estado']);
+        $query = Pedido::query()
+            ->with([...self::RELACIONES, 'entregas:id,pedido_id,estado'])
+            ->withCount('herrajes');
 
         if ($sinEntrega) {
             $query->completadosSinEntrega();
@@ -115,6 +117,10 @@ class PedidoRepository implements PedidoRepositoryInterface
             if ($estatus !== null && in_array($estatus, Pedido::ESTADOS, true)) {
                 $query->where('estado', $estatus);
             }
+        }
+
+        if ($sinHerrajes) {
+            $query->completadosSinHerrajes();
         }
 
         if ($search !== null && $search !== '') {
@@ -137,6 +143,11 @@ class PedidoRepository implements PedidoRepositoryInterface
     public function countCompletadosSinEntrega(): int
     {
         return Pedido::completadosSinEntrega()->count();
+    }
+
+    public function countCompletadosSinHerrajes(): int
+    {
+        return Pedido::completadosSinHerrajes()->count();
     }
 
     public function sumarTotalUltimos7Dias(): float

@@ -23,6 +23,7 @@ class DashboardController extends Controller
         $datos = [
             'totalBajoStock' => $this->inventario->countBajoStock(),
             'totalSinEntrega' => $esAdmin ? $this->pedidos->countCompletadosSinEntrega() : null,
+            'totalSinHerrajes' => $esAdmin ? $this->pedidos->countCompletadosSinHerrajes() : null,
         ];
 
         if ($esAdmin) {

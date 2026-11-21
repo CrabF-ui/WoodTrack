@@ -66,6 +66,11 @@ class PedidoRequest extends FormRequest
             'herrajes' => ['nullable', 'array'],
             'herrajes.*.material_id' => ['required_with:herrajes', 'exists:materials,id', 'distinct'],
             'herrajes.*.cantidad' => ['required_with:herrajes', 'numeric', 'min:0.01'],
+            'confirmar_sin_herrajes' => [
+                Rule::excludeIf(fn () => ! $this->requiereConfirmacionSinHerrajes()),
+                Rule::requiredIf(fn () => $this->requiereConfirmacionSinHerrajes()),
+                'accepted',
+            ],
             'forma_pago' => ['required', 'in:Liquidado,Anticipo'],
             'monto_anticipo' => ['required_if:forma_pago,Anticipo', 'nullable', 'numeric', 'min:0.01', 'lte:total'],
             'fecha_anticipo' => ['required_if:forma_pago,Anticipo', 'nullable', 'date', 'before_or_equal:today'],
@@ -88,6 +93,8 @@ class PedidoRequest extends FormRequest
             'detalles.*.acabado_color.max' => 'El acabado o color no puede superar los 255 caracteres.',
             'herrajes.*.material_id.distinct' => 'No repitas el mismo herraje.',
             'herrajes.*.cantidad.min' => 'La cantidad de herrajes debe ser mayor que cero.',
+            'confirmar_sin_herrajes.required' => 'Antes de completar el pedido, captura los herrajes utilizados o confirma que no lleva herrajes.',
+            'confirmar_sin_herrajes.accepted' => 'Antes de completar el pedido, captura los herrajes utilizados o confirma que no lleva herrajes.',
             'monto_anticipo.lte' => 'El anticipo no puede ser mayor que el total.',
             'fecha_anticipo.before_or_equal' => 'La fecha del anticipo no puede ser posterior a hoy.',
         ];
@@ -112,9 +119,37 @@ class PedidoRequest extends FormRequest
             'detalles.*.acabado_color' => 'acabado o color',
             'herrajes.*.material_id' => 'herraje',
             'herrajes.*.cantidad' => 'cantidad del herraje',
+            'confirmar_sin_herrajes' => 'confirmación de pedido sin herrajes',
             'forma_pago' => 'forma de pago',
             'monto_anticipo' => 'monto del anticipo',
             'fecha_anticipo' => 'fecha del anticipo',
         ];
+    }
+
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated();
+        unset($data['confirmar_sin_herrajes']);
+
+        return $key === null ? $data : data_get($data, $key, $default);
+    }
+
+    private function requiereConfirmacionSinHerrajes(): bool
+    {
+        if ($this->input('estado') !== 'completado') {
+            return false;
+        }
+
+        $pedido = $this->isMethod('post') ? null : Pedido::find($this->route('pedido'));
+
+        if ($pedido?->estado === 'completado') {
+            return false;
+        }
+
+        if ($this->has('herrajes')) {
+            return empty($this->input('herrajes', []));
+        }
+
+        return $pedido === null || ! $pedido->herrajes()->exists();
     }
 }

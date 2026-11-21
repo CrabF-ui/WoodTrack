@@ -26,6 +26,11 @@ class Pedido extends Model
             ]));
     }
 
+    public function scopeCompletadosSinHerrajes(Builder $query): Builder
+    {
+        return $query->where('estado', 'completado')->whereDoesntHave('herrajes');
+    }
+
     public function estaCompletadoSinEntrega(): bool
     {
         if ($this->trashed() || $this->estado !== 'completado') {

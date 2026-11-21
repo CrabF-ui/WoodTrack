@@ -10,6 +10,7 @@ use App\Services\EvidenciaEntregaService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Mockery\MockInterface;
@@ -48,11 +49,13 @@ class EntregarEntregaApiTest extends TestCase
             $this->assertSame($ahora->toDateTimeString(), $entrega->estado_fecha_hora->toDateTimeString());
             $this->assertNotSame($fechaAnterior, $entrega->estado_fecha_hora->toDateTimeString());
             $this->assertSame('María López', $entrega->receptor_nombre);
+            $this->assertNotSame('María López', DB::table('entregas')->where('id', $entrega->id)->value('receptor_nombre'));
             $this->assertFalse($entrega->sin_firma);
             $this->assertNull($entrega->motivo_sin_firma);
             $this->assertNotNull($entrega->firma_path);
             $this->assertCount(2, $entrega->fotos);
             Storage::disk('evidencias')->assertExists($entrega->firma_path);
+            $this->assertFalse(str_starts_with(Storage::disk('evidencias')->get($entrega->firma_path), "\x89PNG"));
             foreach ($entrega->fotos as $foto) {
                 Storage::disk('evidencias')->assertExists($foto->ruta);
             }

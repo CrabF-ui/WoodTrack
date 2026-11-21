@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Entrega;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -58,7 +59,7 @@ class EvidenciaEntregaService
                 $entrega->receptor_nombre = $receptorNombre;
                 $entrega->sin_firma = $firma === null;
                 $entrega->motivo_sin_firma = $firma === null ? $motivoSinFirma : null;
-                $entrega->firma_path = $firma === null ? null : $this->guardarArchivo($firma, "entregas/{$entrega->id}/firma", $archivosGuardados);
+                $entrega->firma_path = $firma === null ? null : $this->guardarFirma($firma, "entregas/{$entrega->id}/firma", $archivosGuardados);
                 $entrega->save();
 
                 foreach ($fotos as $foto) {
@@ -109,6 +110,19 @@ class EvidenciaEntregaService
         $ruta = "{$directorio}/{$nombre}";
 
         Storage::disk('evidencias')->putFileAs($directorio, $archivo, $nombre);
+        $archivosGuardados[] = $ruta;
+
+        return $ruta;
+    }
+
+    private function guardarFirma(UploadedFile $firma, string $directorio, array &$archivosGuardados): string
+    {
+        $uuid = (string) Str::uuid();
+        $extension = $firma->guessExtension();
+        $nombre = $uuid.($extension === null ? '' : ".{$extension}");
+        $ruta = "{$directorio}/{$nombre}";
+
+        Storage::disk('evidencias')->put($ruta, Crypt::encryptString($firma->getContent()));
         $archivosGuardados[] = $ruta;
 
         return $ruta;

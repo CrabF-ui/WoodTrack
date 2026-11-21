@@ -10,3 +10,9 @@ Para agregar un reporte:
 2. Generar la respuesta inline mediante el servicio `App\Services\ReportePdf`.
 3. Registrar la ruta dentro de un grupo con middleware `auth` y `rol`.
 4. Agregar pruebas de acceso para cada rol autorizado y no autorizado.
+
+## Nota de pedido
+
+La nota de pedido contiene los datos del pedido y del cliente, dirección, productos con especificaciones y subtotales, y resumen de pago. Solo los administradores pueden generarla desde el botón **Nota PDF** del listado de pedidos. Los herrajes no se incluyen porque son información interna del taller.
+
+En pedidos con anticipo, el saldo se calcula como el total menos el monto del anticipo, sin permitir valores negativos. La dirección mostrada siempre proviene del pedido, no del cliente.

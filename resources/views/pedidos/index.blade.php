@@ -107,6 +107,7 @@
                                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#confirmarAccionModal" data-action-url="{{ route('pedidos.restore', ['id' => $pedido->id, 'estado' => $estado, 'estatus' => $estatus, 'q' => $search, 'sin_entrega' => $sinEntrega ? 1 : null, 'sin_herrajes' => $sinHerrajes ? 1 : null]) }}" data-action-method="POST" data-client-name="{{ $pedido->cliente?->nombre ?? 'este cliente' }}" data-action-label="Restaurar">Restaurar</button>
                                         @else
                                             <a href="{{ route('pedidos.edit', $pedido->id) }}" class="btn btn-sm btn-outline-primary">Ver / editar</a>
+                                            <a href="{{ route('pedidos.nota', $pedido->id) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">Nota PDF</a>
                                             @if ($pedido->estaCompletadoSinEntrega())
                                                 <a href="{{ route('entregas.create', ['pedido_id' => $pedido->id]) }}" class="btn btn-sm btn-outline-primary">{{ $pedido->tieneIncidenciaPrevia() ? 'Reasignar' : 'Asignar entrega' }}</a>
                                             @endif

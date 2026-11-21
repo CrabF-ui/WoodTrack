@@ -16,3 +16,9 @@ Para agregar un reporte:
 La nota de pedido contiene los datos del pedido y del cliente, dirección, productos con especificaciones y subtotales, y resumen de pago. Solo los administradores pueden generarla desde el botón **Nota PDF** del listado de pedidos. Los herrajes no se incluyen porque son información interna del taller.
 
 En pedidos con anticipo, el saldo se calcula como el total menos el monto del anticipo, sin permitir valores negativos. La dirección mostrada siempre proviene del pedido, no del cliente.
+
+## Lista de compras
+
+La lista de compras puede ser generada por administradores y encargados de inventario. Incluye únicamente materiales activos cuyo stock actual es menor o igual al stock mínimo, agrupados por tipo y ordenados por nombre.
+
+El faltante se calcula como el stock mínimo menos el stock actual, sin permitir resultados negativos. La cantidad a comprar se deja en blanco para llenarla a mano en el reporte impreso.

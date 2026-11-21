@@ -13,6 +13,8 @@ interface MaterialRepositoryInterface
 
     public function getByTipo(string $tipo): Collection;
 
+    public function getBajoStock(): Collection;
+
     public function create(array $data): Material;
 
     public function update(int $id, array $data): Material;

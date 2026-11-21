@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Repositories\Contracts\MaterialRepositoryInterface;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
 use App\Services\ReportePdf;
 use Illuminate\View\View;
@@ -12,6 +13,7 @@ class ReporteController extends Controller
     public function __construct(
         private ReportePdf $reportePdf,
         private PedidoRepositoryInterface $pedidos,
+        private MaterialRepositoryInterface $materiales,
     ) {}
 
     public function index(): View
@@ -32,6 +34,15 @@ class ReporteController extends Controller
             'reportes.nota-pedido',
             ['pedido' => $pedido],
             "nota-pedido-{$pedido->id}.pdf",
+        );
+    }
+
+    public function listaCompras(): Response
+    {
+        return $this->reportePdf->generar(
+            'reportes.lista-compras',
+            ['materiales' => $this->materiales->getBajoStock()],
+            'lista-compras.pdf',
         );
     }
 }

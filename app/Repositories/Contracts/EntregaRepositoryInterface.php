@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Entrega;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -14,6 +15,8 @@ interface EntregaRepositoryInterface
     public function getUnaPorPedido(?int $choferId = null, ?string $fecha = null): LengthAwarePaginator;
 
     public function getIntentosDePedido(int $pedidoId): Collection;
+
+    public function getIncidenciasConSituacion(CarbonInterface $desde, CarbonInterface $hasta): Collection;
 
     public function getForChofer(int $choferId, ?string $fecha = null, ?string $estado = null): Collection;
 

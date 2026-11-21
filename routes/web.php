@@ -62,6 +62,7 @@ Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENT
 
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN])->group(function () {
     Route::get('/reportes/prueba', [ReporteController::class, 'prueba'])->name('reportes.prueba');
+    Route::get('/reportes/problemas-entregas', [ReporteController::class, 'problemasEntregas'])->name('reportes.problemas-entregas');
 });
 
 Route::middleware(['auth', 'rol:'.User::ROL_ADMIN.','.User::ROL_ENCARGADO_INVENTARIO])->group(function () {

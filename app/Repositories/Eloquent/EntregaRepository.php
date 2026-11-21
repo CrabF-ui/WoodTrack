@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Entrega;
 use App\Repositories\Contracts\EntregaRepositoryInterface;
 use App\Services\EvidenciaEntregaService;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -167,6 +168,40 @@ class EntregaRepository implements EntregaRepositoryInterface
             ->where('pedido_id', $pedidoId)
             ->orderByDesc('id')
             ->get();
+    }
+
+    public function getIncidenciasConSituacion(CarbonInterface $desde, CarbonInterface $hasta): Collection
+    {
+        $incidencias = Entrega::query()
+            ->with(['pedido.cliente', 'chofer'])
+            ->where('estado', Entrega::ESTADO_INCIDENCIA)
+            ->whereBetween('estado_fecha_hora', [$desde, $hasta])
+            ->orderBy('estado_fecha_hora')
+            ->get();
+
+        if ($incidencias->isEmpty()) {
+            return $incidencias;
+        }
+
+        $intentosPosteriores = Entrega::query()
+            ->whereIn('pedido_id', $incidencias->pluck('pedido_id')->unique())
+            ->where('id', '>', $incidencias->min('id'))
+            ->get(['id', 'pedido_id', 'estado'])
+            ->groupBy('pedido_id');
+
+        return $incidencias->each(function (Entrega $incidencia) use ($intentosPosteriores): void {
+            $posteriores = $intentosPosteriores
+                ->get($incidencia->pedido_id, collect())
+                ->where('id', '>', $incidencia->id);
+
+            $situacion = match (true) {
+                $posteriores->isEmpty() => 'Sin atender',
+                $posteriores->contains('estado', Entrega::ESTADO_ENTREGADA) => 'Resuelta',
+                default => 'Reasignada',
+            };
+
+            $incidencia->setAttribute('situacion', $situacion);
+        });
     }
 
     public function findById(int $id): Entrega

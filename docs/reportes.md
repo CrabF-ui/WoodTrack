@@ -28,3 +28,9 @@ El faltante se calcula como el stock mínimo menos el stock actual, sin permitir
 El comprobante de entrega solo puede generarlo un administrador cuando la entrega está marcada como entregada y cuenta con evidencia completa: receptor, al menos una foto y firma o motivo de ausencia de firma. Incluye los datos de la entrega, cliente, dirección del pedido, chofer, productos y cantidades, receptor, firma y fotografías. No incluye precios, herrajes ni datos de pago.
 
 Se incorporan como máximo tres fotos, ordenadas por registro, redimensionadas a un ancho máximo de 800 píxeles y comprimidas para mantener ligero el PDF. La firma se descifra únicamente en memoria para incorporarla al comprobante; su contenido descifrado no se guarda ni se registra en logs.
+
+## Problemas con entregas
+
+El reporte de problemas con entregas solo puede generarlo un administrador. El periodo se filtra por la fecha y hora en que se registró la incidencia; de forma predeterminada abarca el mes en curso y puede elegirse un intervalo inclusivo máximo de 366 días.
+
+Incluye el pedido, cliente, chofer, fecha de incidencia, motivo, acción siguiente y situación. La situación se deriva de los intentos posteriores del mismo pedido: **Sin atender** cuando no existe otro intento, **Resuelta** cuando alguno de los intentos posteriores fue entregado y **Reasignada** cuando existen intentos posteriores pero ninguno ha sido entregado.

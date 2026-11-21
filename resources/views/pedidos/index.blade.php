@@ -70,7 +70,7 @@
                             <th>Folio</th>
                             <th>Cliente</th>
                             <th>Fecha de pedido</th>
-                            <th>Fecha de entrega</th>
+                            <th>Entrega estimada</th>
                             <th>Estado</th>
                             <th>Eliminación</th>
                             <th class="text-end">Total</th>

@@ -13,7 +13,7 @@
             <select name="pedido_id" id="pedido_id" class="form-select @error('pedido_id') is-invalid @enderror" required>
                 <option value="">Selecciona un pedido</option>
                 @foreach ($pedidos as $pedido)
-                    <option value="{{ $pedido->id }}" @selected(old('pedido_id', $pedidoPreseleccionado ?? null) == $pedido->id)>#{{ $pedido->id }} — {{ $pedido->cliente->nombre ?? 'Cliente' }}{{ $pedido->direccion ? ' / '.$pedido->direccion : '' }}{{ $pedido->tieneIncidenciaPrevia() ? ' (reasignación)' : '' }}</option>
+                    <option value="{{ $pedido->id }}" @selected(old('pedido_id', $pedidoPreseleccionado ?? null) == $pedido->id)>#{{ $pedido->id }} — {{ $pedido->cliente->nombre ?? 'Cliente' }}{{ $pedido->direccion ? ' / '.$pedido->direccion : '' }}{{ $pedido->tieneIncidenciaPrevia() ? ' (reasignación)' : '' }}{{ $pedido->fecha_entrega ? ' · entrega estimada '.$pedido->fecha_entrega->format('d/m/Y') : '' }}</option>
                 @endforeach
             </select>
             @error('pedido_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -37,6 +37,7 @@
             <label for="fecha_asignada" class="form-label">Fecha asignada</label>
             <input type="date" name="fecha_asignada" id="fecha_asignada" min="{{ now()->toDateString() }}" value="{{ old('fecha_asignada', isset($entrega) ? $entrega->fecha_asignada->format('Y-m-d') : now()->toDateString()) }}" class="form-control @error('fecha_asignada') is-invalid @enderror" required>
             @error('fecha_asignada') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <div class="form-text">Día real de salida de la entrega. La fecha estimada del pedido puede ser distinta.</div>
         </div>
         <div class="col-md-6 mb-3">
             <label for="orden" class="form-label">Orden (opcional)</label>

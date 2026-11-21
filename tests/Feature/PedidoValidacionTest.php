@@ -21,7 +21,7 @@ class PedidoValidacionTest extends TestCase
             ->assertSessionHasErrors([
                 'cliente_id' => 'El campo cliente es obligatorio.',
                 'fecha_pedido' => 'El campo fecha del pedido es obligatorio.',
-                'fecha_entrega' => 'El campo fecha de entrega es obligatorio.',
+                'fecha_entrega' => 'El campo fecha estimada de entrega es obligatorio.',
                 'estado' => 'El campo estado es obligatorio.',
                 'direccion' => 'El campo dirección es obligatorio.',
                 'detalles' => 'El campo productos del pedido es obligatorio.',
@@ -37,7 +37,7 @@ class PedidoValidacionTest extends TestCase
             'fecha_pedido' => '2026-10-20',
             'fecha_entrega' => '2026-10-19',
         ]))->assertSessionHasErrors([
-            'fecha_entrega' => 'La fecha de entrega no puede ser anterior a la fecha del pedido.',
+            'fecha_entrega' => 'La fecha estimada de entrega no puede ser anterior a la fecha del pedido.',
         ]);
     }
 

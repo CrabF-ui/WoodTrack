@@ -9,6 +9,7 @@ use App\Models\Material;
 use App\Models\MovimientoInventario;
 use App\Models\Pedido;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -156,6 +157,75 @@ class PedidoRepository implements PedidoRepositoryInterface
             ->whereBetween('fecha_pedido', [Carbon::today()->subDays(6), Carbon::today()])
             ->where('estado', '!=', 'cancelado')
             ->sum('total');
+    }
+
+    public function getVentasMes(CarbonInterface $mes): array
+    {
+        $desde = $mes->copy()->startOfMonth()->toDateString();
+        $hasta = $mes->copy()->endOfMonth()->toDateString();
+        $pedidos = Pedido::query()
+            ->with(['cliente', 'detalles'])
+            ->whereDate('fecha_pedido', '>=', $desde)
+            ->whereDate('fecha_pedido', '<=', $hasta)
+            ->where('estado', '!=', 'cancelado')
+            ->orderBy('id')
+            ->get();
+
+        $total = (float) $pedidos->sum(fn (Pedido $pedido) => (float) $pedido->total);
+        $numeroPedidos = $pedidos->count();
+        $clientes = $pedidos
+            ->groupBy('cliente_id')
+            ->map(fn ($pedidosCliente) => [
+                'nombre' => $pedidosCliente->first()->cliente?->nombre ?? '—',
+                'pedidos' => $pedidosCliente->count(),
+                'monto' => (float) $pedidosCliente->sum(fn (Pedido $pedido) => (float) $pedido->total),
+            ])
+            ->sort(fn (array $a, array $b) => $b['monto'] <=> $a['monto'] ?: strcasecmp($a['nombre'], $b['nombre']))
+            ->take(5)
+            ->values();
+
+        $productos = collect();
+        foreach ($pedidos as $pedido) {
+            foreach ($pedido->detalles->sortBy('id') as $detalle) {
+                $nombre = trim(preg_replace('/\s+/u', ' ', $detalle->producto));
+                $clave = mb_strtolower($nombre);
+                $producto = $productos->get($clave, [
+                    'nombre' => $nombre,
+                    'cantidad' => 0.0,
+                    'monto' => 0.0,
+                ]);
+                $producto['cantidad'] += (float) $detalle->cantidad;
+                $producto['monto'] += (float) $detalle->cantidad * (float) $detalle->precio_unitario;
+                $productos->put($clave, $producto);
+            }
+        }
+        $productos = $productos
+            ->sort(fn (array $a, array $b) => $b['cantidad'] <=> $a['cantidad'] ?: strcasecmp($a['nombre'], $b['nombre']))
+            ->take(5)
+            ->values();
+
+        $mesAnterior = $mes->copy()->subMonthNoOverflow();
+        $comparacionAnterior = Pedido::query()
+            ->whereDate('fecha_pedido', '>=', $mesAnterior->copy()->startOfMonth()->toDateString())
+            ->whereDate('fecha_pedido', '<=', $mesAnterior->copy()->endOfMonth()->toDateString())
+            ->where('estado', '!=', 'cancelado')
+            ->selectRaw('COUNT(*) as pedidos, COALESCE(SUM(total), 0) as total')
+            ->first();
+        $totalAnterior = (float) $comparacionAnterior->total;
+
+        return [
+            'total' => $total,
+            'pedidos' => $numeroPedidos,
+            'ticketPromedio' => $numeroPedidos === 0 ? 0.0 : $total / $numeroPedidos,
+            'topClientes' => $clientes,
+            'topProductos' => $productos,
+            'comparacion' => [
+                'totalAnterior' => $totalAnterior,
+                'pedidosAnterior' => (int) $comparacionAnterior->pedidos,
+                'diferencia' => $total - $totalAnterior,
+                'variacion' => $totalAnterior == 0.0 ? null : (($total - $totalAnterior) / $totalAnterior) * 100,
+            ],
+        ];
     }
 
     public function findById(int $id): Pedido

@@ -34,3 +34,9 @@ Se incorporan como máximo tres fotos, ordenadas por registro, redimensionadas a
 El reporte de problemas con entregas solo puede generarlo un administrador. El periodo se filtra por la fecha y hora en que se registró la incidencia; de forma predeterminada abarca el mes en curso y puede elegirse un intervalo inclusivo máximo de 366 días.
 
 Incluye el pedido, cliente, chofer, fecha de incidencia, motivo, acción siguiente y situación. La situación se deriva de los intentos posteriores del mismo pedido: **Sin atender** cuando no existe otro intento, **Resuelta** cuando alguno de los intentos posteriores fue entregado y **Reasignada** cuando existen intentos posteriores pero ninguno ha sido entregado.
+
+## Ventas del mes
+
+El reporte de ventas del mes solo puede generarlo un administrador. Una venta se define como la suma de `pedidos.total` de los pedidos no cancelados y no eliminados cuya fecha del pedido pertenece al mes seleccionado. Mide lo vendido y no lo cobrado, por lo que no distingue anticipos ni saldos.
+
+Incluye el total vendido, número de pedidos, ticket promedio, comparación con el mes anterior y los cinco principales clientes y productos. Los productos se agrupan por un nombre normalizado, sin distinguir mayúsculas y minúsculas, espacios sobrantes ni espacios internos repetidos; se muestra el nombre del primer registro del grupo.

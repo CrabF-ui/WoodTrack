@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProblemasEntregasRequest;
+use App\Http\Requests\VentasMesRequest;
 use App\Repositories\Contracts\EntregaRepositoryInterface;
 use App\Repositories\Contracts\MaterialRepositoryInterface;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
@@ -31,6 +32,7 @@ class ReporteController extends Controller
                 'desde' => $hoy->copy()->startOfMonth()->toDateString(),
                 'hasta' => $hoy->copy()->endOfMonth()->toDateString(),
             ],
+            'mesPredeterminado' => $hoy->format('Y-m'),
         ]);
     }
 
@@ -102,6 +104,18 @@ class ReporteController extends Controller
             'reportes.problemas-entregas',
             compact('incidencias', 'resumen', 'desde', 'hasta'),
             'problemas-entregas.pdf',
+        );
+    }
+
+    public function ventasMes(VentasMesRequest $request): Response
+    {
+        $mes = Carbon::createFromFormat('!Y-m', $request->validated('mes'), config('reportes.zona_horaria'));
+        $ventas = $this->pedidos->getVentasMes($mes);
+
+        return $this->reportePdf->generar(
+            'reportes.ventas-mes',
+            compact('mes', 'ventas'),
+            'ventas-mes.pdf',
         );
     }
 }

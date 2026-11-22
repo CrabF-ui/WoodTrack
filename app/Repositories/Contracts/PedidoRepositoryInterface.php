@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Pedido;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -26,6 +27,8 @@ interface PedidoRepositoryInterface
     public function countCompletadosSinHerrajes(): int;
 
     public function sumarTotalUltimos7Dias(): float;
+
+    public function getVentasMes(CarbonInterface $mes): array;
 
     /** GET /api/pedidos/{id} */
     public function findById(int $id): Pedido;

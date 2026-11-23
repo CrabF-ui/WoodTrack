@@ -43,33 +43,8 @@ class DashboardSemanaTest extends TestCase
         $this->actingAs(User::factory()->create())->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Entregas de la semana')
-            ->assertSee('2 entregadas de 5 asignadas')
-            ->assertSee('Últimos 7 días');
-    }
-
-    public function test_admin_ve_la_suma_de_pedidos_registrados_excluyendo_cancelados_eliminados_y_fuera_de_fecha(): void
-    {
-        $this->crearPedido(now()->subDays(6)->toDateString(), 'pendiente', '100.50');
-        $this->crearPedido(now()->toDateString(), 'completado', '200.00');
-        $this->crearPedido(now()->toDateString(), 'cancelado', '999.00');
-
-        $pedidoEliminado = $this->crearPedido(now()->toDateString(), 'pendiente', '500.00');
-        $pedidoEliminado->delete();
-        $this->crearPedido(now()->subDays(7)->toDateString(), 'pendiente', '700.00');
-
-        $this->actingAs(User::factory()->create())->get(route('dashboard'))
-            ->assertOk()
-            ->assertSee('Pedidos registrados')
-            ->assertSee('$300.50')
-            ->assertSee('Últimos 7 días');
-    }
-
-    public function test_admin_ve_cero_cuando_no_hay_pedidos_en_la_semana(): void
-    {
-        $this->actingAs(User::factory()->create())->get(route('dashboard'))
-            ->assertOk()
-            ->assertSee('Pedidos registrados')
-            ->assertSee('$0.00');
+            ->assertSee('2 de 5')
+            ->assertSee('entregadas de asignadas · últimos 7 días');
     }
 
     public function test_encargado_de_inventario_no_recibe_datos_ni_tarjetas_de_la_semana(): void
@@ -81,8 +56,7 @@ class DashboardSemanaTest extends TestCase
             ->assertDontSee('Entregas de la semana')
             ->assertDontSee('Pedidos registrados')
             ->assertDontSee('$12,345.00')
-            ->assertViewMissing('entregasSemana')
-            ->assertViewMissing('pedidosSemana');
+            ->assertViewMissing('entregasSemana');
     }
 
     private function crearPedido(?string $fecha = null, string $estado = 'completado', string $total = '100.00'): Pedido

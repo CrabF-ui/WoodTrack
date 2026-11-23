@@ -46,7 +46,6 @@ class DashboardController extends Controller
             ];
             $datos['entregasHoy'] = $this->entregas->contarEntregasDeHoy();
             $datos['entregasSemana'] = $this->entregas->contarEntregasUltimos7Dias();
-            $datos['pedidosSemana'] = $this->pedidos->sumarTotalUltimos7Dias();
         }
 
         return view('dashboard', $datos);

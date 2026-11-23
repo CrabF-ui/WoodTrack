@@ -2,3 +2,8 @@
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 @import 'admin-lte/dist/css/adminlte.css';
 @import './woodtrack-theme.css';
+
+.dashboard-kpi-value {
+    font-size: clamp(1.6rem, 2.2vw, 2.5rem);
+    white-space: nowrap;
+}

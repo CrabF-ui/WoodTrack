@@ -26,8 +26,6 @@ interface PedidoRepositoryInterface
 
     public function countCompletadosSinHerrajes(): int;
 
-    public function sumarTotalUltimos7Dias(): float;
-
     public function getVentasMes(CarbonInterface $mes): array;
 
     /** GET /api/pedidos/{id} */

@@ -12,7 +12,6 @@ use App\Repositories\Contracts\PedidoRepositoryInterface;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class PedidoRepository implements PedidoRepositoryInterface
@@ -149,14 +148,6 @@ class PedidoRepository implements PedidoRepositoryInterface
     public function countCompletadosSinHerrajes(): int
     {
         return Pedido::completadosSinHerrajes()->count();
-    }
-
-    public function sumarTotalUltimos7Dias(): float
-    {
-        return (float) Pedido::query()
-            ->whereBetween('fecha_pedido', [Carbon::today()->subDays(6), Carbon::today()])
-            ->where('estado', '!=', 'cancelado')
-            ->sum('total');
     }
 
     public function getVentasMes(CarbonInterface $mes): array

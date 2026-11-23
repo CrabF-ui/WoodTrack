@@ -18,7 +18,7 @@
             <div class="row g-3">
                 <div class="col-md-6 col-xl-3"><div class="card h-100"><div class="card-body">
                     <h3 class="card-title h6 text-muted">Ventas del mes</h3>
-                    <p class="display-6 mb-1">${{ number_format($indicadoresMes['total'], 2, '.', ',') }}</p>
+                    <p class="display-6 dashboard-kpi-value mb-1">${{ number_format($indicadoresMes['total'], 2, '.', ',') }}</p>
                     <p class="mb-2">{{ $indicadoresMes['pedidos'] }} {{ $indicadoresMes['pedidos'] === 1 ? 'pedido' : 'pedidos' }}</p>
                     @if ($indicadoresMes['variacion'] === null)
                         <small class="text-muted">N/D vs mes anterior</small>
@@ -37,7 +37,7 @@
                 </div></div></div>
                 <div class="col-md-6 col-xl-3"><div class="card h-100"><div class="card-body">
                     <h3 class="card-title h6 text-muted">Ticket promedio</h3>
-                    <p class="display-6 mb-2">${{ number_format($indicadoresMes['ticketPromedio'], 2, '.', ',') }}</p>
+                    <p class="display-6 dashboard-kpi-value mb-2">${{ number_format($indicadoresMes['ticketPromedio'], 2, '.', ',') }}</p>
                     @if ($variacionTicket === null)
                         <small class="text-muted">N/D vs mes anterior</small>
                     @else
@@ -48,7 +48,7 @@
                     <h3 class="card-title h6 text-muted">Cliente principal</h3>
                     @if ($indicadoresMes['clientePrincipal'])
                         <p class="h4 mb-2">{{ $indicadoresMes['clientePrincipal']['nombre'] }}</p>
-                        <p class="mb-1">${{ number_format($indicadoresMes['clientePrincipal']['monto'], 2, '.', ',') }}</p>
+                        <p class="dashboard-kpi-value mb-1">${{ number_format($indicadoresMes['clientePrincipal']['monto'], 2, '.', ',') }}</p>
                         <small class="text-muted">{{ $indicadoresMes['clientePrincipal']['pedidos'] }} {{ $indicadoresMes['clientePrincipal']['pedidos'] === 1 ? 'pedido' : 'pedidos' }}</small>
                     @else
                         <p class="text-muted mb-0">Sin ventas este mes</p>
@@ -60,10 +60,6 @@
 
     <div class="row g-3">
         @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
-            <div class="col-md-6 col-xl-3"><div class="card h-100"><div class="card-body">
-                <h2 class="card-title">Papelera</h2><p class="card-text">Revisa y restaura pedidos eliminados.</p>
-                <a href="{{ route('pedidos.index', ['estado' => 'eliminados']) }}" class="btn btn-outline-primary">Ver papelera</a>
-            </div></div></div>
             <div class="col-md-6 col-xl-3"><div class="card h-100 {{ $totalSinEntrega > 0 ? 'border-warning' : '' }}"><div class="card-body">
                 <h6 class="card-subtitle text-muted mb-2">Pedidos completados sin entrega</h6><p class="display-6 mb-2">{{ $totalSinEntrega }}</p>
                 @if ($totalSinEntrega > 0)<a href="{{ route('pedidos.index', ['sin_entrega' => 1]) }}">Ver pedidos</a>@else<small class="text-success">Todo en orden</small>@endif
@@ -77,20 +73,12 @@
             <h6 class="card-subtitle text-muted mb-2">Materiales en bajo stock</h6><p class="display-6 mb-2">{{ $totalBajoStock }}</p>
             @if ($totalBajoStock > 0)<a href="{{ route('inventario.index', ['bajo_stock' => 1]) }}">Ver materiales</a>@else<small class="text-success">Todo en orden</small>@endif
         </div></div></div>
+        @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
+            <div class="col-md-6 col-xl-3"><div class="card h-100"><div class="card-body"><h2 class="card-title h5">Entregas de la semana</h2><p class="display-6 text-nowrap mb-1">{{ $entregasSemana['entregadas'] }} de {{ $entregasSemana['asignadas'] }}</p><small class="text-muted">entregadas de asignadas · últimos 7 días</small></div></div></div>
+        @endif
     </div>
 
     @if (auth()->user()->rol === \App\Models\User::ROL_ADMIN)
-        <div class="row g-3 mt-3">
-            <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
-                <h2 class="card-title h5">Entregas de hoy</h2>
-                @if (array_sum($entregasHoy) === 0)<p class="text-muted mb-0">No hay entregas programadas para hoy.</p>@else
-                    <ul class="list-unstyled mb-0"><li><span class="badge" style="background-color:#198754">&nbsp;</span> Entregadas: {{ $entregasHoy['entregadas'] }}</li><li><span class="badge" style="background-color:#d97706">&nbsp;</span> Pendientes: {{ $entregasHoy['pendientes'] }}</li></ul>
-                @endif
-            </div></div></div>
-            <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body"><h2 class="card-title h5">Entregas de la semana</h2><p class="display-6 mb-2">{{ $entregasSemana['entregadas'] }} entregadas de {{ $entregasSemana['asignadas'] }} asignadas</p><small class="text-muted">Últimos 7 días</small></div></div></div>
-            <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body"><h2 class="card-title h5">Pedidos registrados</h2><p class="display-6 mb-2">${{ number_format($pedidosSemana, 2, '.', ',') }}</p><small class="text-muted">Últimos 7 días</small></div></div></div>
-        </div>
-
         <section aria-labelledby="graficas-titulo" class="mt-5">
             <h2 id="graficas-titulo" class="h4 mb-3">Gráficas</h2>
             <div class="row g-3">

@@ -100,9 +100,19 @@ class DashboardKpisTest extends TestCase
 
     public function test_indicadores_aparecen_antes_de_las_tarjetas_operativas_y_las_graficas(): void
     {
-        $this->actingAs(User::factory()->create())->get(route('dashboard'))
-            ->assertOk()
-            ->assertSeeInOrder(['Indicadores del mes', 'Papelera', 'Entregas de hoy', 'Gráficas']);
+        $response = $this->actingAs(User::factory()->create())->get(route('dashboard'));
+
+        $response->assertOk()
+            ->assertSeeInOrder(['Indicadores del mes', 'Pedidos completados sin entrega', 'Entregas de la semana', 'Gráficas'])
+            ->assertSee('Pedidos completados sin herrajes')
+            ->assertSee('Materiales en bajo stock')
+            ->assertSee('Ventas')
+            ->assertSee('Top 5 productos por cantidad')
+            ->assertSee('Top 5 clientes por monto')
+            ->assertDontSee('Papelera')
+            ->assertDontSee('Pedidos registrados');
+
+        $this->assertSame(1, substr_count($response->getContent(), 'Entregas de hoy'));
     }
 
     private function pedido(

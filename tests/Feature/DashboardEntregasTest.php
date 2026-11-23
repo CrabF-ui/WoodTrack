@@ -40,8 +40,9 @@ class DashboardEntregasTest extends TestCase
         $this->actingAs(User::factory()->create())->get(route('dashboard'))
             ->assertOk()
             ->assertSee('entregas-hoy-chart', false)
-            ->assertSee('Entregadas: 1')
-            ->assertSee('Pendientes: 3')
+            ->assertSee('Entregas de hoy: 1 entregadas y 3 pendientes')
+            ->assertDontSee('Entregadas: 1')
+            ->assertDontSee('Pendientes: 3')
             ->assertSee('chart.js@4.4.7');
     }
 
@@ -55,7 +56,8 @@ class DashboardEntregasTest extends TestCase
 
         $this->actingAs(User::factory()->create())->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('No hay entregas programadas para hoy.')
+            ->assertSee('Sin entregas hoy')
+            ->assertDontSee('No hay entregas programadas para hoy.')
             ->assertDontSee('entregas-hoy-chart', false)
             ->assertDontSee('chart.js', false);
     }

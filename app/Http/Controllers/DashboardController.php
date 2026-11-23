@@ -27,6 +27,23 @@ class DashboardController extends Controller
         ];
 
         if ($esAdmin) {
+            $ventas = $this->pedidos->getVentasMes(now());
+            $comparacion = $ventas['comparacion'];
+
+            $datos['indicadoresMes'] = [
+                'total' => $ventas['total'],
+                'pedidos' => $ventas['pedidos'],
+                'variacion' => $comparacion['variacion'],
+                'totalAnterior' => $comparacion['totalAnterior'],
+                'productoPrincipal' => $ventas['topProductos']->first(),
+                'ticketPromedio' => $ventas['ticketPromedio'],
+                'ticketAnterior' => $comparacion['pedidosAnterior'] > 0
+                    ? $comparacion['totalAnterior'] / $comparacion['pedidosAnterior']
+                    : null,
+                'clientePrincipal' => $ventas['topClientes']->first(),
+                'topProductos' => $ventas['topProductos'],
+                'topClientes' => $ventas['topClientes'],
+            ];
             $datos['entregasHoy'] = $this->entregas->contarEntregasDeHoy();
             $datos['entregasSemana'] = $this->entregas->contarEntregasUltimos7Dias();
             $datos['pedidosSemana'] = $this->pedidos->sumarTotalUltimos7Dias();

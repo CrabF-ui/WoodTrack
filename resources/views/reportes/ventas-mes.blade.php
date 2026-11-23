@@ -14,6 +14,9 @@
         .money { text-align: right; white-space: nowrap; }
         .empty-message { border: 1px solid #bbb; padding: 14px; text-align: center; }
         .definition { border-top: 1px solid #bbb; color: #555; font-size: 9px; margin-top: 20px; padding-top: 8px; }
+        .chart { margin: 14px 0; page-break-inside: avoid; text-align: center; }
+        .chart img { height: auto; max-width: 100%; }
+        .chart-empty { border: 1px solid #bbb; color: #555; padding: 14px; }
     </style>
 
     @php
@@ -48,6 +51,22 @@
             </td>
         </tr>
     </table>
+
+    <div class="chart">
+        @if ($graficaProductos)
+            <img src="{{ $graficaProductos }}" alt="Top 5 productos por cantidad vendida">
+        @else
+            <p class="chart-empty">Sin datos para graficar en el periodo</p>
+        @endif
+    </div>
+
+    <div class="chart">
+        @if ($graficaComparacion)
+            <img src="{{ $graficaComparacion }}" alt="Ventas: mes anterior contra mes actual">
+        @else
+            <p class="chart-empty">Sin datos para graficar en el periodo</p>
+        @endif
+    </div>
 
     @if ($ventas['pedidos'] === 0)
         <p class="empty-message">No hay ventas registradas en el mes seleccionado.</p>

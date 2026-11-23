@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\Pedido;
 use App\Models\User;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
+use App\Services\GraficaBarras;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -16,6 +17,8 @@ class VentasMesPdfTest extends TestCase
 
     public function test_acceso_al_pdf_por_rol(): void
     {
+        $this->pedido('2026-11-10', 450, 'Cliente PDF', 'Mesa PDF', 3, 150);
+
         $response = $this->actingAs(User::factory()->create())
             ->get(route('reportes.ventas-mes', ['mes' => '2026-11']));
 
@@ -194,6 +197,9 @@ class VentasMesPdfTest extends TestCase
         foreach (['Mes: Noviembre 2026', '$1,234.00', 'Niña Cañón', 'Cómoda Ñandú', 'Definición de venta', 'pedidos no cancelados y no eliminados', 'no refleja cobros'] as $texto) {
             $this->assertStringContainsString($texto, $html);
         }
+        $this->assertStringContainsString('data:image/svg+xml;base64,', $html);
+        $this->assertStringContainsString('Top 5 productos por cantidad vendida', $html);
+        $this->assertStringContainsString('Ventas: mes anterior contra mes actual', $html);
     }
 
     public function test_mes_sin_ventas_muestra_mensaje_y_resumen_en_ceros(): void
@@ -205,6 +211,7 @@ class VentasMesPdfTest extends TestCase
         $this->assertSame(0, $ventas['pedidos']);
         $this->assertSame(0.0, $ventas['ticketPromedio']);
         $this->assertStringContainsString('No hay ventas registradas en el mes seleccionado.', $html);
+        $this->assertSame(2, substr_count($html, 'Sin datos para graficar en el periodo'));
         $this->assertStringNotContainsString('Top 5 clientes', $html);
         $this->assertStringNotContainsString('Top 5 productos', $html);
     }
@@ -253,10 +260,26 @@ class VentasMesPdfTest extends TestCase
     private function renderizar(array $ventas, string $mes): string
     {
         $this->actingAs(User::factory()->create());
+        $graficas = app(GraficaBarras::class);
+        $fechaMes = Carbon::parse($mes);
+        $graficaProductos = $graficas->generar(
+            'Top 5 productos por cantidad vendida',
+            $ventas['topProductos']->pluck('nombre')->all(),
+            $ventas['topProductos']->pluck('cantidad')->all(),
+        );
+        $graficaComparacion = $graficas->generar(
+            'Ventas: mes anterior contra mes actual',
+            ['Mes anterior', 'Mes actual'],
+            [$ventas['comparacion']['totalAnterior'], $ventas['total']],
+            GraficaBarras::FORMATO_PESOS,
+            GraficaBarras::ORIENTACION_VERTICAL,
+        );
 
         return view('reportes.ventas-mes', [
             'ventas' => $ventas,
-            'mes' => Carbon::parse($mes),
+            'mes' => $fechaMes,
+            'graficaProductos' => $graficaProductos,
+            'graficaComparacion' => $graficaComparacion,
         ])->render();
     }
 

@@ -10,6 +10,9 @@
         .report-table thead { display: table-header-group; }
         .empty-message { border: 1px solid #bbb; padding: 14px; text-align: center; }
         .nowrap { white-space: nowrap; }
+        .chart { margin: 14px 0; page-break-inside: avoid; text-align: center; }
+        .chart img { height: auto; max-width: 100%; }
+        .chart-empty { border: 1px solid #bbb; color: #555; padding: 14px; }
     </style>
 
     <p class="period">Periodo: {{ $desde->format('d/m/Y') }} al {{ $hasta->format('d/m/Y') }}</p>
@@ -19,6 +22,14 @@
         Reasignadas: {{ $resumen['reasignadas'] }} |
         Resueltas: {{ $resumen['resueltas'] }}
     </p>
+
+    <div class="chart">
+        @if ($graficaIncidencias)
+            <img src="{{ $graficaIncidencias }}" alt="Incidencias por situación">
+        @else
+            <p class="chart-empty">Sin datos para graficar en el periodo</p>
+        @endif
+    </div>
 
     @if ($incidencias->isEmpty())
         <p class="empty-message">No hay incidencias de entrega en el periodo seleccionado.</p>

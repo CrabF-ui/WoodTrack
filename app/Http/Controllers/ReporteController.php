@@ -8,6 +8,7 @@ use App\Repositories\Contracts\EntregaRepositoryInterface;
 use App\Repositories\Contracts\MaterialRepositoryInterface;
 use App\Repositories\Contracts\PedidoRepositoryInterface;
 use App\Services\EvidenciaEntregaService;
+use App\Services\GraficaBarras;
 use App\Services\ReportePdf;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -21,6 +22,7 @@ class ReporteController extends Controller
         private MaterialRepositoryInterface $materiales,
         private EntregaRepositoryInterface $entregas,
         private EvidenciaEntregaService $evidencias,
+        private GraficaBarras $graficas,
     ) {}
 
     public function index(): View
@@ -99,10 +101,15 @@ class ReporteController extends Controller
             'reasignadas' => $incidencias->where('situacion', 'Reasignada')->count(),
             'resueltas' => $incidencias->where('situacion', 'Resuelta')->count(),
         ];
+        $graficaIncidencias = $this->graficas->generar(
+            'Incidencias por situación',
+            ['Sin atender', 'Reasignadas', 'Resueltas'],
+            [$resumen['sinAtender'], $resumen['reasignadas'], $resumen['resueltas']],
+        );
 
         return $this->reportePdf->generar(
             'reportes.problemas-entregas',
-            compact('incidencias', 'resumen', 'desde', 'hasta'),
+            compact('incidencias', 'resumen', 'desde', 'hasta', 'graficaIncidencias'),
             'problemas-entregas.pdf',
         );
     }
@@ -111,10 +118,24 @@ class ReporteController extends Controller
     {
         $mes = Carbon::createFromFormat('!Y-m', $request->validated('mes'), config('reportes.zona_horaria'));
         $ventas = $this->pedidos->getVentasMes($mes);
+        $meses = [1 => 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        $mesAnterior = $mes->copy()->subMonthNoOverflow();
+        $graficaProductos = $this->graficas->generar(
+            'Top 5 productos por cantidad vendida',
+            $ventas['topProductos']->pluck('nombre')->all(),
+            $ventas['topProductos']->pluck('cantidad')->all(),
+        );
+        $graficaComparacion = $this->graficas->generar(
+            'Ventas: mes anterior contra mes actual',
+            [$meses[$mesAnterior->month], $meses[$mes->month]],
+            [$ventas['comparacion']['totalAnterior'], $ventas['total']],
+            GraficaBarras::FORMATO_PESOS,
+            GraficaBarras::ORIENTACION_VERTICAL,
+        );
 
         return $this->reportePdf->generar(
             'reportes.ventas-mes',
-            compact('mes', 'ventas'),
+            compact('mes', 'ventas', 'graficaProductos', 'graficaComparacion'),
             'ventas-mes.pdf',
         );
     }

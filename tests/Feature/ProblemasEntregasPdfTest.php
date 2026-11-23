@@ -7,6 +7,7 @@ use App\Models\Entrega;
 use App\Models\Pedido;
 use App\Models\User;
 use App\Repositories\Contracts\EntregaRepositoryInterface;
+use App\Services\GraficaBarras;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -18,6 +19,8 @@ class ProblemasEntregasPdfTest extends TestCase
 
     public function test_acceso_al_pdf_por_rol(): void
     {
+        $this->incidencia('2026-11-10 10:00:00', 'Cliente PDF')->setAttribute('situacion', 'Sin atender');
+
         $response = $this->actingAs(User::factory()->create())->get(route('reportes.problemas-entregas', [
             'desde' => '2026-11-01',
             'hasta' => '2026-11-30',
@@ -126,6 +129,8 @@ class ProblemasEntregasPdfTest extends TestCase
         foreach (['Periodo: 01/11/2026 al 30/11/2026', 'Total de incidencias: 3', 'Sin atender: 1', 'Reasignadas: 1', 'Resueltas: 1', 'Cliente Cañón', 'Chofer Ñuñoa', 'Dirección incorrecta', '01/11/2026 08:15', 'Situación'] as $texto) {
             $this->assertStringContainsString($texto, $html);
         }
+        $this->assertStringContainsString('data:image/svg+xml;base64,', $html);
+        $this->assertStringContainsString('Incidencias por situación', $html);
         $this->assertStringContainsString('<td>—</td>', $html);
     }
 
@@ -135,6 +140,7 @@ class ProblemasEntregasPdfTest extends TestCase
 
         $this->assertStringContainsString('Total de incidencias: 0', $html);
         $this->assertStringContainsString('No hay incidencias de entrega en el periodo seleccionado.', $html);
+        $this->assertStringContainsString('Sin datos para graficar en el periodo', $html);
         $this->assertStringNotContainsString('<table class="report-table">', $html);
     }
 
@@ -206,12 +212,18 @@ class ProblemasEntregasPdfTest extends TestCase
             'reasignadas' => $incidencias->where('situacion', 'Reasignada')->count(),
             'resueltas' => $incidencias->where('situacion', 'Resuelta')->count(),
         ];
+        $graficaIncidencias = app(GraficaBarras::class)->generar(
+            'Incidencias por situación',
+            ['Sin atender', 'Reasignadas', 'Resueltas'],
+            [$resumen['sinAtender'], $resumen['reasignadas'], $resumen['resueltas']],
+        );
 
         return view('reportes.problemas-entregas', [
             'incidencias' => $incidencias,
             'resumen' => $resumen,
             'desde' => Carbon::parse($desde),
             'hasta' => Carbon::parse($hasta)->endOfDay(),
+            'graficaIncidencias' => $graficaIncidencias,
         ])->render();
     }
 }
